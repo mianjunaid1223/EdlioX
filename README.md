@@ -1,150 +1,206 @@
-# EdlioX: Educational Resource & Community Learning Platform
+# EdlioX Educational Marketplace & Discussion Platform
 
-EdlioX is a production-oriented educational web platform designed to facilitate academic collaboration, resource monetization, peer-to-peer discussions, and study material distribution. Built using Python, Flask, MongoDB, and Tailwind CSS, the platform features a complete marketplace and community system.
-
----
-
-## Architectural Overview
+Production-grade educational content management, academic resource marketplace, and community discussion ecosystem built with Flask, MongoDB, Stripe Connect, AWS S3, and Google Gemini AI.
 
 ```
-+-----------------------+      +---------------------------+      +--------------------------+
-|  Student / Creator    | ---> | Flask Application Layer   | ---> | MongoDB Database Cluster |
-|  Web Browser Interface|      | (Gunicorn / WSGI Runtime) |      | (Users, Resources, Chats)|
-+-----------------------+      +---------------------------+      +--------------------------+
-                                             |
-                                             +---> Stripe Payment Gateway
-                                             +---> AWS S3 Object Storage (Uploads)
-                                             +---> Google Gemini AI Integration
++---------------------------------------------------------------------------------------+
+|                                  Client Viewports                                     |
+|   +--------------------------+  +---------------------------+  +------------------+   |
+|   | Resource Marketplace     |  | Collaborative Forum       |  | Creator Earnings |   |
+|   | (Browsing, S3 Downloads) |  | (Thread UI, ServiceWorker)|  | (Stripe Connect) |   |
+|   +-------------+------------+  +-------------+-------------+  +--------+---------+   |
++-----------------|-----------------------------|-------------------------|-------------+
+                  |                             |                         |
+                  v                             v                         v
++---------------------------------------------------------------------------------------+
+|                               Flask Application Kernel                                |
+|                                                                                       |
+|   +--------------------+  +---------------------+  +------------------------------+   |
+|   | Auth Blueprint     |  | Resources Blueprint |  | Discussions Blueprint        |   |
+|   | /login, /register, |  | /upload, /view,     |  | /discussions, /ask,          |   |
+|   | /profile, sessions |  | /analytics, S3 SDK  |  | /api/comments, nested trees  |   |
+|   +--------------------+  +---------------------+  +------------------------------+   |
+|   +--------------------+  +---------------------+  +------------------------------+   |
+|   | Monetization Engine|  | Admin Blueprint     |  | AI Cognitive Layer           |   |
+|   | Stripe Express,    |  | User moderation,    |  | Gemini 1.5 Flash             |   |
+|   | payout thresholds  |  | payout verification |  | summarization & Q&A assist   |   |
+|   +--------------------+  +---------------------+  +------------------------------+   |
++---------------------------------------------------------------------------------------+
+|                                                                                       |
+|   Storage & Database Tier:                                                            |
+|   - MongoDB Collections: users, resources, discussions, comments, monetization        |
+|   - Object Storage: AWS S3 Bucket with pre-signed GET/PUT upload streams              |
+|   - Session Engine: Secure filesystem sessions with 7-day TTL                        |
++---------------------------------------------------------------------------------------+
 ```
 
----
+## System Architecture
 
-## Key Modules & Features
+EdlioX operates as a distributed educational marketplace and community discussion hub. The application kernel is structured into modular Flask blueprints decoupled through centralized MongoDB collection handles and service layers.
 
-1. Educational Resource Marketplace:
-   - Resource upload and distribution with configurable pricing models.
-   - Preview generation and secure download token verification.
-   - Creator monetization dashboard displaying sales analytics, revenue splits, and payout history.
-   - Direct integration with Stripe Connect for merchant account onboarding and automated payouts.
+### Architectural Subsystems
 
-2. Community Discussion Forums:
-   - Topic-based discussion boards with nested comment threads and author badges.
-   - Upvoting, answer resolution marking, and content categorization by academic subjects.
-   - Real-time client-side updates using Service Workers (`discussion-sw.js`) and asynchronous fetch APIs.
+1. User Authentication and Profile Management: Implements Flask-Login sessions backed by bcrypt password hashes. Tracks authorization roles, avatar assets, and creator payment profiles.
 
-3. User Authentication & Profile Management:
-   - Secure account registration, email verification, and password recovery workflows.
-   - Public creator portfolios showcasing uploaded study resources, reputation ratings, and peer reviews.
-   - Role-based authorization distinguishing student accounts, verified educators, and administrative moderators.
+2. Academic Resource Marketplace: Manages educational assets (lecture slides, revision notes, laboratory guides, assessments) with metadata tagging across academic disciplines and grade levels. Includes dual-mode storage supporting AWS S3 buckets or local filesystem persistence with stream limits up to 16MB.
 
-4. Cloud File Storage & Media Processing:
-   - Configurable storage backend supporting local filesystem storage or AWS S3 buckets.
-   - Configurable file size limits (up to 100MB) with mimetype validation for PDFs, lecture documents, and images.
+3. Creator Monetization Pipeline: A financial engine that tracks qualified page impressions and downloads per resource. Creators who exceed the 1,000 view threshold become eligible to connect a Stripe Express account and initiate automated direct deposit payouts subject to an administrator review queue.
 
----
+4. Real-time Discussion and Knowledge Forum: Multi-tier question and response forum supporting nested conversation trees, search indexing, markdown formatting, AJAX comment synchronization, and service worker background caching (discussion-sw.js) for resilient offline reading.
 
-## Technology Stack
+5. AI Academic Assistant: Incorporates Google Gemini APIs to generate automated resource digests, keyword extraction, and contextual educational explanations for student inquiries.
 
-- Backend Framework: Flask, Werkzeug, Flask-Session
-- Database: MongoDB (via PyMongo and BSON ObjectIDs)
-- Payment Gateway: Stripe Connect & Webhooks
-- Cloud Storage: Amazon Web Services (AWS S3)
-- AI Tutoring & Assistance: Google Generative AI (Gemini Flash)
-- Frontend Interface: Jinja2 Server Templates, Tailwind CSS, Custom JavaScript
-- Containerization & Deployment: Docker, Docker Compose, Passenger WSGI
-
----
-
-## Environment Configuration
-
-Configure application secrets in a `.env` file in the project root:
-
-```env
-# Flask Application Settings
-FLASK_APP=run.py
-FLASK_ENV=production
-SECRET_KEY=your_production_secret_key
-
-# MongoDB Database Connection
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/edliox
-
-# Transactional Mail (SMTP)
-MAIL_SERVER=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USE_TLS=True
-MAIL_USERNAME=your_system_email@gmail.com
-MAIL_PASSWORD=your_system_email_app_password
-MAIL_DEFAULT_SENDER=your_system_email@gmail.com
-
-# File Upload Policies
-UPLOAD_FOLDER=app/static/uploads
-MAX_CONTENT_LENGTH=104857600
-
-# Google Gemini AI Integration
-GEMINI_API_KEY=your_gemini_api_key
-
-# Stripe Payment Infrastructure
-STRIPE_PUBLIC_KEY=pk_live_your_stripe_public_key
-STRIPE_SECRET_KEY=sk_live_your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=whsec_your_webhook_signing_secret
-
-# Amazon Web Services (AWS S3)
-AWS_ACCESS_KEY_ID=your_aws_access_key_id
-AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
-AWS_BUCKET_NAME=your_s3_bucket_name
-AWS_REGION=us-east-1
-```
-
----
-
-## Installation & Deployment
-
-### Local Development Setup
-
-1. Clone repository:
-   ```bash
-   git clone https://github.com/mianjunaid1223/EdlioX.git
-   cd EdlioX
-   ```
-
-2. Create virtual environment and install packages:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
-
-3. Launch development server:
-   ```bash
-   python run.py
-   ```
-   Navigate to `http://localhost:5000`.
-
-### Production Deployment via Docker Compose
-
-```bash
-docker-compose up --build -d
-```
-
----
-
-## Project Structure
+## Directory and File Organization
 
 ```
 EdlioX/
 |-- app/
-|   |-- __init__.py            # Flask application factory
-|   |-- database.py            # MongoDB connection handlers
-|   |-- forms.py               # Form validation definitions
-|   |-- models/                # Schema definitions (user, resource, discussion)
-|   |-- routes/                # Blueprint controllers (admin, auth, discussion, monetization, resources)
-|   |-- api/                   # JSON REST endpoints for comments and discussion threads
-|   |-- templates/             # Jinja2 HTML views organized by feature domain
-|   |-- static/                # Stylesheets, JavaScript modules, and icon assets
-|-- config.py                  # Environment-specific configuration classes
-|-- run.py                     # Development execution entry point
-|-- wsgi.py                    # Production WSGI application wrapper
-|-- Dockerfile                 # Container image specification
-|-- docker-compose.yml         # Multi-service composition
-|-- requirements.txt           # Python dependency manifest
+|   |-- __init__.py                # Application factory, MongoDB setup, blueprint registration
+|   |-- config.py                  # Environment settings, Stripe keys, AWS credentials, thresholds
+|   |-- database.py                # MongoDB collection references, index definitions, connection pool
+|   |-- forms.py                   # WTForms validation for auth, resource uploads, discussions
+|   |-- api/
+|   |   |-- comments.py            # REST API endpoints for comment voting, replies, and moderation
+|   |   |-- discussions.py         # REST API endpoints for thread querying and status updates
+|   |-- auth/
+|   |   |-- utils.py               # Token generators, password hashers, session inspectors
+|   |-- models/
+|   |   |-- user.py                # User entity, authentication methods, profile updates
+|   |   |-- resource.py            # Resource schema, view counter, download tracking, monetization
+|   |   |-- discussion.py          # Discussion thread, vote counts, comment tree resolution
+|   |-- routes/
+|   |   |-- admin.py               # Platform administration, user moderation, payout approvals
+|   |   |-- auth.py                # Login, registration, password recovery, profile editing
+|   |   |-- discussion_routes.py   # Discussion forum views, thread creation, reply dispatching
+|   |   |-- monetization.py        # Creator dashboard, payout requests, Stripe Connect onboarding
+|   |   |-- resources.py           # Resource catalog, file uploads, S3 integration, analytics
+|   |-- static/
+|   |   |-- css/                   # Responsive styling, discussions layout, typography
+|   |   |-- js/
+|   |   |   |-- comments.js        # Dynamic comment tree rendering and AJAX post handlers
+|   |   |   |-- discussion.js      # Discussion interaction and vote dispatchers
+|   |   |   |-- discussion-sw.js   # Service Worker for offline thread caching
+|   |   |   |-- discussion-ui.js   # UI state transitions, modals, and toasts
+|   |-- templates/                 # Jinja2 templates organized by blueprint
+|-- docker-compose.yml             # Web and MongoDB container orchestration
+|-- Dockerfile                     # Multi-stage container build definition
+|-- requirements.txt               # Pinned Python package dependencies
+`-- run.py                        # WSGI entrypoint script
+```
+
+## Database Schema Specification
+
+The application uses MongoDB collections configured with specific compound and unique indexes:
+
+### Collections Schema
+
+| Collection | Key Fields | Indexes | Description |
+|---|---|---|---|
+| users | _id, email, username, password_hash, monetization_status, total_earnings, pending_earnings, stripe_account_id | email: 1 (unique), username: 1 (unique), monetization_status: 1 | User credentials, roles, and financial state |
+| resources | _id, user_id, title, description, file_type, file_path, views, downloads, monetization_status, earnings | user_id: 1, created_at: -1, monetization_status: 1 | Study materials uploaded by platform users |
+| discussions | _id, user_id, title, content, tags, views, votes, comment_count, created_at | user_id: 1, created_at: -1, tags: 1 | Academic forum threads and questions |
+| comments | _id, discussion_id, user_id, parent_id, content, votes, created_at | discussion_id: 1, created_at: 1, parent_id: 1 | Threaded responses and nested comment trees |
+| monetization_requests | _id, user_id, status, bank_details, eligibility_metrics, applied_at, processed_at | user_id: 1, status: 1, applied_at: -1 | Creator monetization approval submissions |
+| payouts | _id, user_id, amount, status, stripe_payout_id, requested_at, processed_at | user_id: 1, status: 1, requested_at: -1 | Historical ledger of creator fund distributions |
+
+## Creator Monetization and Stripe Connect Engine
+
+The financial distribution pipeline calculates creator remuneration through automated view telemetry:
+
+```python
+# Threshold parameters defined in config.py
+MONETIZATION_VIEW_THRESHOLD = 1000
+MONETIZATION_RATE_PER_1000_VIEWS = 0.20  # USD
+MINIMUM_PAYOUT_THRESHOLD = 50.0          # USD
+```
+
+1. Eligibility Verification: To apply for monetization, a creator must demonstrate at least 1,000 cumulative verified views across their catalog, accompanied by active submissions within the preceding 30-day window.
+
+2. Onboarding Workflow: When approved, the system generates a Stripe Express account via stripe.Account.create(type='express') and binds the resulting account ID to the user document.
+
+3. Fund Settlement: When pending earnings exceed $50.00, the creator triggers /monetization/request-payout. The platform issues a Stripe Transfer into the creator account and logs the transaction record into the payouts collection.
+
+## API Endpoint Reference
+
+### Resource Marketplace API
+
+| Route | Method | Authorization | Description |
+|---|---|---|---|
+| /resources | GET | Public | Paginated list of study materials with subject and grade filters |
+| /resources/upload | POST | Logged In | Multipart form upload handling document validation and S3 upload |
+| /resources/<id> | GET | Public | Resource viewport with view counter increment and download link |
+| /resources/<id>/download | GET | Logged In | Increments download counter and serves asset from S3 / local path |
+| /resources/analytics | GET | Logged In | Creator statistics for view velocities and download conversion rates |
+
+### Discussion Forum API
+
+| Route | Method | Authorization | Description |
+|---|---|---|---|
+| /discussions | GET | Public | Forum directory filtered by category and popularity |
+| /discussions/ask | POST | Logged In | Thread creation endpoint accepting title, category, and markdown content |
+| /api/comments/create | POST | Logged In | Dispatches new comment or nested reply into discussion hierarchy |
+| /api/comments/<id>/vote | POST | Logged In | Records upvote/downvote on comment and updates aggregate score |
+
+### Monetization API
+
+| Route | Method | Authorization | Description |
+|---|---|---|---|
+| /monetization/dashboard | GET | Logged In | Summarizes view thresholds, earnings balance, and payout ledger |
+| /monetization/apply | POST | Logged In | Submits creator banking details and verification documentation |
+| /monetization/request-payout | POST | Logged In | Initiates Stripe Express payout when pending balance is >= $50.00 |
+
+## Environment Configuration
+
+Copy the example environment template and configure runtime credentials:
+
+```bash
+cp .env.example .env
+```
+
+| Key | Description | Default / Example |
+|---|---|---|
+| FLASK_APP | WSGI application pointer | run.py |
+| FLASK_ENV | Execution mode | production |
+| SECRET_KEY | Cryptographic session signing key | generate via secrets.token_hex(32) |
+| MONGODB_URI | MongoDB connection string | mongodb://localhost:27017/edliox |
+| STRIPE_PUBLIC_KEY | Stripe publishable API token | pk_test_... |
+| STRIPE_SECRET_KEY | Stripe private secret token | sk_test_... |
+| STRIPE_WEBHOOK_SECRET | Webhook verification signing secret | whsec_... |
+| AWS_ACCESS_KEY_ID | Amazon Web Services access credential | AKIA... |
+| AWS_SECRET_ACCESS_KEY | Amazon Web Services private key | your-secret-key |
+| AWS_BUCKET_NAME | Target S3 bucket for educational assets | edliox-resources |
+| AWS_REGION | AWS cloud region identifier | us-east-1 |
+| GEMINI_API_KEY | Google AI Studio Gemini API token | AIzaSy... |
+| MAIL_SERVER | SMTP outbound server hostname | smtp.gmail.com |
+| MAIL_PORT | Outbound SMTP communication port | 587 |
+| MAIL_USERNAME | Service notification email address | notifications@edliox.com |
+| MAIL_PASSWORD | SMTP authentication password | app-password |
+
+## Local Execution Instructions
+
+### Bare Metal Setup
+
+```bash
+# Create and activate Python virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+
+# Install package dependencies
+pip install -r requirements.txt
+
+# Start MongoDB daemon (if running locally)
+mongod --dbpath /data/db
+
+# Launch the Flask application
+python run.py
+```
+
+### Docker Compose Deployment
+
+```bash
+# Build and launch web application and MongoDB database
+docker-compose up --build -d
+
+# Verify service logs
+docker-compose logs -f web
 ```
