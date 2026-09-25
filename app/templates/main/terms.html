@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Terms of Service - EdlioX{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="text-center mb-4">Terms of Service</h1>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">1. Acceptance of Terms</h2>
+                    <p>By accessing and using EdlioX, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, please do not use our platform.</p>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">2. User Accounts</h2>
+                    <p>To use certain features of EdlioX, you must register for an account. You agree to:</p>
+                    <ul>
+                        <li>Provide accurate and complete information</li>
+                        <li>Maintain the security of your account</li>
+                        <li>Accept responsibility for all activities under your account</li>
+                        <li>Notify us immediately of any security breaches</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">3. Content Guidelines</h2>
+                    <p>When uploading content to EdlioX, you agree to:</p>
+                    <ul>
+                        <li>Only upload content you own or have permission to share</li>
+                        <li>Not upload content that infringes on intellectual property rights</li>
+                        <li>Not upload content that is illegal, harmful, or inappropriate</li>
+                        <li>Provide accurate descriptions and metadata for your content</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">4. Monetization</h2>
+                    <p>For content creators participating in our monetization program:</p>
+                    <ul>
+                        <li>You must meet our quality criteria for monetization</li>
+                        <li>You are responsible for any tax obligations</li>
+                        <li>We reserve the right to modify monetization terms</li>
+                        <li>Payments are subject to our payment processing policies</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">5. Intellectual Property</h2>
+                    <p>EdlioX respects intellectual property rights. Users must:</p>
+                    <ul>
+                        <li>Respect copyright and other intellectual property laws</li>
+                        <li>Not use content without proper attribution</li>
+                        <li>Report any copyright violations</li>
+                        <li>Understand that uploaded content remains your property</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">6. Privacy</h2>
+                    <p>Your privacy is important to us. Please review our <a href="{{ url_for('main.privacy') }}">Privacy Policy</a> to understand how we collect and use your information.</p>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">7. Termination</h2>
+                    <p>We reserve the right to:</p>
+                    <ul>
+                        <li>Terminate or suspend your account for violations</li>
+                        <li>Remove content that violates our terms</li>
+                        <li>Modify or discontinue services at any time</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">8. Changes to Terms</h2>
+                    <p>We may update these terms at any time. Continued use of EdlioX after changes constitutes acceptance of the new terms.</p>
+                    
+                    <div class="mt-4">
+                        <p class="text-muted">Last updated: March 23, 2024</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

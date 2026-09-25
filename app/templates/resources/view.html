@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+
+{% block title %}{{ resource.title }} - Educational Resource | EdlioX{% endblock %}
+
+{% block meta_description %}{{ resource.description[:160] + '...' if resource.description|length > 160 else resource.description }} Download this educational resource on EdlioX.{% endblock %}
+
+{% block meta_keywords %}{{ resource.title }}, {{ resource.file_type }} resource, educational material, study resource, learning material{% endblock %}
+
+{% block og_title %}{{ resource.title }} - EdlioX{% endblock %}
+{% block og_description %}{{ resource.description[:160] + '...' if resource.description|length > 160 else resource.description }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="card-title mb-0">{{ resource.title }}</h1>
+                <div class="btn-group">
+                    <a href="{{ url_for('resources.download_resource', resource_id=resource.id) }}?download=true" class="btn btn-success">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                    <a href="{{ url_for('resources.list_resources') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <h5>Description</h5>
+                    <p class="card-text">{{ resource.description }}</p>
+                    
+                    {% if resource.file_type in ['jpg', 'jpeg', 'png'] %}
+                        <div class="mt-4">
+                            <img src="{{ url_for('resources.download_resource', resource_id=resource.id) }}" 
+                                 class="img-fluid rounded" 
+                                 alt="{{ resource.title }}">
+                        </div>
+                    {% elif resource.file_type == 'pdf' %}
+                        <div class="mt-4">
+                            <h5>PDF Preview</h5>
+                            <p><strong>Note:</strong> Some resources can't be previewed — please download to view.</p>
+                            <div class="embed-responsive" style="height: 600px;">
+                                {% if resource.google_drive_link and ('drive.google.com/file/d/' in resource.google_drive_link) %}
+                                    {% set file_id = resource.google_drive_link.split('/file/d/')[1].split('/')[0] %}
+                                    <iframe 
+                                        src="https://drive.google.com/file/d/{{ file_id }}/preview" 
+                                        class="embed-responsive-item w-100 h-100" 
+                                        style="border: 1px solid #dee2e6; border-radius: 0.25rem;"
+                                        allowfullscreen>
+                                    </iframe>
+                                {% elif resource.file_path %}
+                                    <iframe 
+                                        src="{{ url_for('resources.download_resource', resource_id=resource.id) }}?download=false" 
+                                        class="embed-responsive-item w-100 h-100" 
+                                        style="border: 1px solid #dee2e6; border-radius: 0.25rem;"
+                                        allowfullscreen>
+                                    </iframe>
+                                {% else %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i> 
+                                        No preview available for this PDF. Please download to view the content.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Resource Details</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Type:</strong> {{ resource.file_type|upper if resource.file_type else 'N/A' }}</li>
+                                <li class="mt-3 mb-3">
+                                    <strong>Uploaded by:</strong>
+                                    <div class="d-flex align-items-center mt-2">
+                                        {% if resource.author and resource.author.username != 'Unknown User' %}
+                                            <a href="{{ url_for('auth.profile', username=resource.author.username) }}">
+                                                <img src="{{ resource.author.avatar_url or url_for('static', filename='images/default-avatar.png') }}" 
+                                                     alt="{{ resource.author.username }}" 
+                                                     class="rounded-circle me-2" 
+                                                     style="width: 40px; height: 40px; object-fit: cover;">
+                                            </a>
+                                            <a href="{{ url_for('auth.profile', username=resource.author.username) }}" class="text-decoration-none">
+                                                {{ resource.author.username }}
+                                            </a>
+                                        {% else %}
+                                            <div class="avatar-circle bg-secondary text-white me-2" style="width: 40px; height: 40px;">
+                                                <i class="fa fa-user"></i>
+                                            </div>
+                                            <span>Unknown</span>
+                                        {% endif %}
+                                    </div>
+                                </li>
+                                <li><strong>Views:</strong> {{ resource.views }}</li>
+                                <li><strong>Downloads:</strong> {{ resource.downloads }}</li>
+                                <li><strong>Upload Date:</strong> {{ resource.created_at.strftime('%Y-%m-%d') if resource.created_at else 'Unknown' }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <style>
+                
+                /* Enhanced Comment Styles */
+                .comments-container {
+                    max-width: 900px;
+                    margin: 0 auto;
+                }
+                
+                .avatar-circle {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: bold;
+                    background-color: #007bff;
+                    color: white;
+                }
+                
+                .comment-card {
+                    
+                    margin-bottom: 1.5rem;
+                    border-radius: 0.5rem;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+                    border: none;
+                    transition: transform 0.15s ease, box-shadow 0.15s ease;
+                }
+                
+                .comment-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+                }
+                
+                .replies {
+                    padding-left: 2rem;
+                    margin-left: 1rem;
+                    border-left: 2px solid #e9ecef;
+                }
+                
+                .reply-card {
+                    background-color: #f8f9fa;
+                    margin-bottom: 0.75rem;
+                }
+                
+                .like-btn.active, .dislike-btn.active {
+                    transform: scale(1.1);
+                }
+                
+                .comment-form .form-control {
+                    border-radius: 0.5rem;
+                    resize: none;
+                    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+                }
+                
+                .comment-form .form-control:focus {
+                    border-color: rgba(0, 123, 255, 0.5);
+                    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+                }
+                
+                /* Discussion header */
+                .discussion-header {
+                    position: relative;
+                    margin-bottom: 2rem;
+                    padding-bottom: 1rem;
+                    border-bottom: 1px solid #e9ecef;
+                }
+                
+                .discussion-header:after {
+                    content: '';
+                    position: absolute;
+                    bottom: -1px;
+                    left: 0;
+                    width: 100px;
+                    height: 3px;
+                    background-color: #007bff;
+                }
+            </style>
+            
+            <!-- New Comment System -->
+            <div id="resource-comments" class="mt-5" data-resource-id="{{ resource.id|string }}">
+                <div class="discussion-header">
+                    <h3 class="mb-0">Discussion</h3>
+                    <p class="text-muted small">Share your thoughts about this resource</p>
+                </div>
+                
+                {% if current_user.is_authenticated %}
+                <div class="card shadow-sm comment-form-card mt-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="card-title mb-3">Join the discussion</h5>
+                        <form id="comment-form" class="comment-form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="mb-3">
+                                <textarea name="content" class="form-control" rows="3" placeholder="Share your thoughts on this resource..." required></textarea>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="fas fa-paper-plane me-2"></i>Post Comment
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <div class="card bg-light my-4">
+                    <div class="card-body text-center p-4">
+                        <p class="mb-0">
+                            <i class="fas fa-lock me-2"></i>
+                            Please <a href="{{ url_for('auth.login') }}" class="fw-bold">log in</a> to join the discussion.
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div id="comments-list" class="comments-container mb-4">
+                    <!-- Comments will be loaded dynamically via JavaScript -->
+                    <div class="text-center p-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading comments...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Loading comments...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Comment Modal -->
+<div class="modal fade" id="reportCommentModal" tabindex="-1" aria-labelledby="reportCommentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportCommentModalLabel">Report Comment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="reportCommentForm" onsubmit="reportComment(event)">
+                <div class="modal-body">
+                    <input type="hidden" name="comment_id" value="">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-3">
+                        <label for="reportReason" class="form-label">Why are you reporting this comment?</label>
+                        <select class="form-select" id="reportReason" name="reason" required>
+                            <option value="">Select a reason</option>
+                            <option value="inappropriate content">Inappropriate content</option>
+                            <option value="spam">Spam</option>
+                            <option value="harassment">Harassment or bullying</option>
+                            <option value="misinformation">Misinformation</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="reportDetails" class="form-label">Additional details (optional)</label>
+                        <textarea class="form-control" id="reportDetails" name="details" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Thank you for helping keep our community safe and respectful. Our moderators will review this report.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include the new comments JavaScript -->
+<script src="{{ url_for('static', filename='js/comments.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set CSRF token as a global variable for all comment/reply forms
+    window.csrfToken = "{{ csrf_token() }}";
+    
+    // Initialize comments with proper parameters
+    const userId = "{{ current_user.id if current_user.is_authenticated else '' }}";
+    initializeComments(window.csrfToken, userId);
+    
+    // No need to separately attach event listeners or call loadComments as initializeComments handles both
+});
+</script>
+{% endblock %}

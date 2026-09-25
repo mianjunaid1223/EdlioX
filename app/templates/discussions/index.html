@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}{% if subject %}{{ subject }} - {% elif grade_level %}{{ grade_level }} - {% elif tag %}{{ tag }} - {% elif search_query %}{{ search_query }} - {% endif %}Educational Discussions | EdlioX{% endblock %}
+
+{% block meta_description %}{% if subject %}Browse {{ subject }} discussions{% elif grade_level %}Explore {{ grade_level }} level educational questions{% elif tag %}Find discussions about {{ tag }}{% elif search_query %}Search results for {{ search_query }}{% else %}Ask questions, share knowledge, and find answers on a wide range of educational topics from our community of students and educators.{% endif %}{% endblock %}
+
+{% block meta_keywords %}{% if subject %}{{ subject }}, {{ subject }} questions, {{ subject }} discussions, {% elif grade_level %}{{ grade_level }}, {{ grade_level }} questions, {{ grade_level }} education, {% elif tag %}{{ tag }}, {{ tag }} discussions, {% elif search_query %}{{ search_query }}, {% endif %}educational discussions, academic questions, student forum, learning community, education Q&A{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2">Educational Discussions</h1>
+            <p class="text-muted">Ask questions, share knowledge, and help others learn</p>
+        </div>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('discussions.create_discussion_form') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Ask Question
+        </a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}?next={{ url_for('discussions.index') }}" class="btn btn-primary">
+            <i class="fas fa-sign-in-alt me-2"></i>Log in to Ask
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap" style="width: 100%;">
+                        <div class="btn-group mb-2 mb-md-0 " style="width: 100%;">
+                            <a href="{{ url_for('discussions.index', sort='newest') }}" 
+                               class="btn btn-sm {% if sort == 'newest' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                                Newest
+                            </a>
+                     
+                            <a href="{{ url_for('discussions.index', sort='top') }}" 
+                               class="btn btn-sm {% if sort == 'top' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                                Top Rated
+                            </a>
+                            <a href="{{ url_for('discussions.index', sort='unanswered') }}" 
+                               class="btn btn-sm {% if sort == 'unanswered' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                                Unanswered
+                            </a>
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- Items Per Page Control -->
+                    <div class="mt-2 d-flex justify-content-end">
+                        <form action="{{ url_for('discussions.index') }}" method="GET" class="d-flex align-items-center">
+                            <input type="hidden" name="sort" value="{{ sort }}">
+                            {% if search_query %}
+                            <input type="hidden" name="q" value="{{ search_query }}">
+                            {% endif %}
+                            {% if subject %}
+                            <input type="hidden" name="subject" value="{{ subject }}">
+                            {% endif %}
+                            {% if grade_level %}
+                            <input type="hidden" name="grade_level" value="{{ grade_level }}">
+                            {% endif %}
+                            {% if tag %}
+                            <input type="hidden" name="tag" value="{{ tag }}">
+                            {% endif %}
+                     
+                            
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discussion List -->
+            <div class="discussion-list">
+                {% for discussion in discussions %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex">
+                            <!-- Vote/Stats Column -->
+                            <div class="text-center me-3" style="min-width: 70px;">
+                                <div class="d-flex flex-column align-items-center">
+                                    <div class="fs-4 fw-bold">{{ discussion.score }}</div>
+                                    <div class="small text-muted">votes</div>
+                                </div>
+                                <div class="d-flex flex-column align-items-center mt-2">
+                                    <div class="fs-6 {% if discussion.comments|length > 0 %}text-success fw-bold{% else %}text-muted{% endif %}">
+                                        {{ discussion.comments|length }}
+                                    </div>
+                                    <div class="small text-muted">answers</div>
+                                </div>
+                                <div class="d-flex flex-column align-items-center mt-2">
+                                    <div class="small text-muted">{{ discussion.views }} views</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Content Column -->
+                            <div class="flex-grow-1">
+                                <h2 class="h5 mb-2">
+                                    <a href="{{ url_for('discussions.view_discussion', discussion_id=discussion.id) }}" class="text-decoration-none stretched-link">
+                                        {{ discussion.title }}
+                                    </a>
+                                </h2>
+                                
+                                <!-- Tags -->
+                                <div class="mb-2">
+                                    {% if discussion.subject %}
+                                    <span class="badge bg-light text-dark me-1">{{ discussion.subject }}</span>
+                                    {% endif %}
+                                    {% if discussion.grade_level %}
+                                    <span class="badge bg-light text-dark me-1">{{ discussion.grade_level }}</span>
+                                    {% endif %}
+                                    {% for tag in discussion.tags %}
+                                    <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- User Info -->
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="small text-muted">
+                                        asked {{ discussion.created_at|timeago }}
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{ discussion.author.avatar_url or url_for('static', filename='images/default-avatar.png') }}" 
+                                             class="rounded-circle me-1" width="20" height="20" style="object-fit: cover;">
+                                        <span class="small">{{ discussion.username }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>No discussions found. Be the first to start a discussion!
+                </div>
+                {% endfor %}
+            </div>
+            <div class="d-flex justify-content-end mb-3">
+                <form method="get" action="{{ url_for('discussions.index') }}" class="d-flex align-items-center">
+                    {% if query %}
+                    <input type="hidden" name="q" value="{{ query }}">
+                    {% endif %}
+                    <input type="hidden" name="sort" value="{{ current_sort }}">
+                    <label for="per_page" class="me-2 text-muted small">Items per page:</label>
+                    <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                        <option value="5" {% if pagination.per_page == 5 %}selected{% endif %}>5</option>
+                        <option value="10" {% if pagination.per_page == 10 %}selected{% endif %}>10</option>
+                        <option value="15" {% if pagination.per_page == 15 %}selected{% endif %}>15</option>
+                        <option value="20" {% if pagination.per_page == 20 %}selected{% endif %}>20</option>
+                    </select>
+                </form>
+            </div>
+            <!-- Pagination -->
+            {% if pagination %}
+            <nav aria-label="Page navigation" class="my-4">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('discussions.index', page=pagination.prev_num, sort=sort, subject=subject, grade_level=grade_level) }}">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-chevron-left"></i> Previous</span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page in pagination.iter_pages() %}
+                        {% if page %}
+                            <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('discussions.index', page=page, sort=sort, subject=subject, grade_level=grade_level) }}">
+                                    {{ page }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('discussions.index', page=pagination.next_num, sort=sort, subject=subject, grade_level=grade_level) }}">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next <i class="fas fa-chevron-right"></i></span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <!-- Search Box -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Search Questions</h5>
+                    <form action="{{ url_for('discussions.index') }}" method="GET">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="q" placeholder="Search..." value="{{ request.args.get('q', '') }}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Popular Tags -->
+            <div class="card mb-4">
+                <div class="card-header">Popular Tags</div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for tag in popular_tags %}
+                        <a href="{{ url_for('discussions.index', tag=tag.name) }}" class="text-decoration-none">
+                            <span class="badge bg-light text-dark p-2">
+                                {{ tag.name }}
+                                <span class="ms-1 badge bg-secondary">{{ tag.count }}</span>
+                            </span>
+                        </a>
+                        {% else %}
+                        <p class="text-muted small">No tags available yet</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hot Questions -->
+            <div class="card mb-4">
+                <div class="card-header">Hot Questions <span class="badge bg-secondary ms-1 small">Top 5</span></div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for hot_discussion in hot_discussions %}
+                        <li class="list-group-item">
+                            <a href="{{ url_for('discussions.view_discussion', discussion_id=hot_discussion.id) }}" class="text-decoration-none">
+                                {{ hot_discussion.title }}
+                            </a>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <span class="badge bg-success">{{ hot_discussion.score }} votes</span>
+                                <small class="text-muted">{{ hot_discussion.views }} views</small>
+                            </div>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-center text-muted">No hot questions yet</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Help Box -->
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">How to Ask a Good Question</h5>
+                    <ul class="small mb-0 ps-3">
+                        <li>Be specific and clear about what you're asking</li>
+                        <li>Provide relevant context and examples</li>
+                        <li>Make sure your question hasn't been asked before</li>
+                        <li>Use proper formatting and tags</li>
+                        <li>Be respectful and patient with responses</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    // Add timeago functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // This would require a timeago library, which you should add to your scripts
+    });
+</script>
+{% endblock %} 

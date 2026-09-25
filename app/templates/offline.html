@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5 text-center">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow p-5">
+        <div class="mb-4">
+          <i class="fas fa-wifi-slash text-secondary fa-4x"></i>
+        </div>
+        
+        <h1 class="display-6 mb-4">You're offline</h1>
+        
+        <p class="lead mb-4">
+          It looks like you don't have an internet connection right now.
+        </p>
+        
+        <p class="text-muted mb-4">
+          Some features may not be available while you're offline. Your drafts and changes will be saved and synchronized when you reconnect.
+        </p>
+        
+        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center mt-4">
+          <button id="retryConnectionBtn" class="btn btn-primary btn-lg px-4 gap-3">
+            <i class="fas fa-sync-alt me-2"></i> Try Again
+          </button>
+          
+          <a href="/" class="btn btn-outline-secondary btn-lg px-4">
+            <i class="fas fa-home me-2"></i> Home Page
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('retryConnectionBtn').addEventListener('click', function() {
+  window.location.reload();
+});
+
+// Check connection status periodically
+setInterval(function() {
+  if (navigator.onLine) {
+    const lastPage = localStorage.getItem('lastPage') || '/discussions';
+    window.location.href = lastPage;
+  }
+}, 5000);
+
+// Store last online page for when connection is restored
+if (document.referrer) {
+  localStorage.setItem('lastPage', document.referrer);
+}
+</script>
+{% endblock %} 

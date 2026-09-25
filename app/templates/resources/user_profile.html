@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.username }}'s Profile - Study Resources{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <!-- User Profile Card -->
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <!-- User Avatar -->
+                        <div class="avatar-circle avatar-circle-lg bg-primary text-white me-4" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                            <span style="font-size: 2rem; font-weight: bold;">{{ user.username[0]|upper }}</span>
+                        </div>
+                        
+                        <!-- User Info -->
+                        <div>
+                            <h2 class="card-title mb-0" style="text-transform: capitalize;">{{ user.username }}</h2>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-map-marker-alt me-1"></i> {{ user.country }}
+                                {% if user.grade_level %}
+                                <span class="ms-3"><i class="fas fa-graduation-cap me-1"></i> {{ user.grade_level }}</span>
+                                {% endif %}
+                            </p>
+                            <p class="text-muted">
+                                <i class="fas fa-calendar-alt me-1"></i> Member since {{ user.created_at.strftime('%b %d, %Y') }}
+                            </p>
+                        </div>
+                        
+                        <!-- User Stats -->
+                        <div class="ms-auto text-end">
+                            <div class="badge bg-primary p-2 mb-2">
+                                <i class="fas fa-file-alt me-1"></i> {{ total_resources }} Resources
+                            </div>
+                            <div class="d-flex gap-3 justify-content-end">
+                                <div class="text-muted">
+                                    <i class="fas fa-eye me-1"></i> {{ total_views }} Views
+                                </div>
+                                <div class="text-muted">
+                                    <i class="fas fa-download me-1"></i> {{ total_downloads }} Downloads
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resources Section -->
+    <div class="row">
+        <div class="col-md-12">
+            <h3 class="mb-3">Resources by {{ user.username }}</h3>
+            {% if resources %}
+                <div class="row resource-grid">
+                    {% include "resources/resource_cards.html" %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> This user hasn't uploaded any resources yet.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

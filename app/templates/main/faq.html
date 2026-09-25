@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}FAQ - EdlioX{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="text-center mb-4">Frequently Asked Questions</h1>
+            
+            <div class="accordion" id="faqAccordion">
+                <!-- General Questions -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#general">
+                            General Questions
+                        </button>
+                    </h2>
+                    <div id="general" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <div class="mb-4">
+                                <h3 class="h5">What is EdlioX?</h3>
+                                <p>EdlioX is a platform that connects educators and students worldwide, allowing them to share and access educational resources, engage in discussions, and monetize their content.</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h3 class="h5">How do I get started?</h3>
+                                <p>Simply create an account, complete your profile, and you can start uploading resources or participating in discussions. You can also browse existing resources and join discussions without creating an account.</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h3 class="h5">Is it free to use?</h3>
+                                <p>Yes, basic features are free. You can browse resources, participate in discussions, and upload content without any cost. Premium features and monetization options are available for content creators.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Resource Sharing -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#resources">
+                            Resource Sharing
+                        </button>
+                    </h2>
+                    <div id="resources" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <div class="mb-4">
+                                <h3 class="h5">What types of resources can I upload?</h3>
+                                <p>You can upload various educational materials including documents, presentations, videos, and interactive content. All content must be original or properly attributed.</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h3 class="h5">What are the file size limits?</h3>
+                                <p>Maximum file size is 100MB per upload. For larger files, consider splitting them into smaller parts or using external storage with links.</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h3 class="h5">How do I monetize my content?</h3>
+                                <p>To monetize your content, you need to meet certain quality criteria and apply through our monetization program. Approved content can be sold to users.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Discussions -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#discussions">
+                            Discussions
+                        </button>
+                    </h2>
+                    <div id="discussions" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <div class="mb-4">
+                                <h3 class="h5">How do discussions work?</h3>
+                                <p>Discussions are topic-based conversations where users can ask questions, share insights, and help each other. You can start a new discussion or participate in existing ones.</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h3 class="h5">Are there discussion guidelines?</h3>
+                                <p>Yes, we have community guidelines to ensure respectful and productive discussions. Users should maintain professional conduct and avoid inappropriate content.</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h3 class="h5">How do I report inappropriate content?</h3>
+                                <p>You can report inappropriate content using the report button on any resource or discussion. Our moderation team will review and take appropriate action.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Account & Privacy -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#account">
+                            Account & Privacy
+                        </button>
+                    </h2>
+                    <div id="account" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <div class="mb-4">
+                                <h3 class="h5">How do I reset my password?</h3>
+                                <p>Click the "Forgot Password" link on the login page and follow the instructions sent to your email address.</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h3 class="h5">How is my data protected?</h3>
+                                <p>We use industry-standard security measures to protect your data. Your personal information is never shared with third parties without your consent.</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h3 class="h5">Can I delete my account?</h3>
+                                <p>Yes, you can delete your account through your profile settings. Note that this action cannot be undone.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-body text-center">
+                    <h2 class="h4 mb-3">Still Have Questions?</h2>
+                    <p>If you couldn't find the answer you're looking for, please contact our support team.</p>
+                    <a href="{{ url_for('main.contact') }}" class="btn btn-primary">Contact Support</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

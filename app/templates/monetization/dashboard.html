@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Monetization Hub - EdlioX{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium button styling */
+    .premium-button {
+        width: fit-content;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.2em 1.8rem;
+        cursor: pointer;
+        gap: 0.4rem;
+        font-weight: bold;
+        border-radius: 30px;
+        text-shadow: 2px 2px 3px rgb(136 0 136 / 50%);
+        background: linear-gradient(15deg, #880088, #aa2068, #cc3f47, #de6f3d, #f09f33, #de6f3d, #cc3f47, #aa2068, #880088) no-repeat;
+        background-size: 300%;
+        color: #fff;
+        border: none;
+        background-position: left center;
+        box-shadow: 0 30px 10px -20px rgba(0,0,0,.2);
+        transition: all .3s ease;
+        letter-spacing: 0.5px;
+    }
+
+    .premium-button:hover:not(:disabled) {
+        background-size: 320%;
+        background-position: right center;
+        color: #fff;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+
+    .premium-button:disabled {
+        opacity: 0.85;
+        cursor: not-allowed;
+    }
+
+    .premium-button:hover svg {
+        fill: #fff;
+    }
+
+    .premium-button svg, .premium-button i {
+        width: 23px;
+        fill: #f09f33;
+        transition: .3s ease;
+        margin-right: 8px;
+    }
+
+    /* Premium card styling */
+    .premium-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    }
+
+    .premium-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 45px -10px rgba(0,0,0,0.15);
+    }
+
+    .card-header-gradient {
+        background: linear-gradient(120deg, #880088, #aa2068);
+        color: white;
+        border-bottom: none;
+        padding: 1.8rem;
+    }
+
+    .rocket-animation {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+
+    .premium-text {
+        font-weight: 300;
+        letter-spacing: 0.3px;
+        line-height: 1.6;
+    }
+
+    .premium-heading {
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .premium-divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(136, 0, 136, 0.2), transparent);
+        margin: 2rem 0;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h2 class="premium-heading">Monetization Hub</h2>
+        <div>
+            <a href="{{ url_for('resources.resource_analytics') }}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-chart-bar"></i> Analytics Dashboard
+            </a>
+            <a href="{{ url_for('resources.my_resources') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> My Resources
+            </a>
+        </div>
+    </div>
+
+    <!-- Premium Monetization Announcement -->
+    <div class="premium-card card shadow mb-5">
+        <div class="card-header-gradient">
+            <h4 class="mb-0 d-flex align-items-center premium-heading">
+                <i class="fas fa-rocket me-2"></i> 
+                Monetization Platform Launching Soon
+            </h4>
+        </div>
+        <div class="card-body text-center py-5">
+            <i class="fas fa-rocket text-primary fa-3x mb-4 rocket-animation"></i>
+            <h3 class="premium-heading mb-4">Exclusive Monetization Opportunity</h3>
+            <p class="premium-text mb-4">We're crafting an innovative platform to empower educators and content creators to monetize their valuable educational resources. Join us in revolutionizing how knowledge is shared and rewarded.</p>
+            
+            <button class="premium-button mx-auto" disabled data-bs-toggle="popover" 
+                    data-bs-trigger="hover" 
+                    data-bs-placement="top"
+                    data-bs-content="Our premium monetization platform is launching soon. Stay tuned for exclusive early access opportunities.">
+                <i class="fas fa-dollar-sign"></i> Monetization Hub
+            </button>
+            
+            <div class="premium-divider"></div>
+            
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <h5 class="premium-heading text-primary mb-4">Strategic Content Development</h5>
+                    <p class="premium-text lead mb-4">Position yourself for success by building your content portfolio now. Our upcoming monetization platform will reward high-quality educational resources with premium earnings potential. Start creating and sharing your expertise today to maximize your future revenue opportunities.</p>
+                    <a href="{{ url_for('resources.upload_resource') }}" class="btn btn-primary mx-auto mt-3">
+                        <i class="fas fa-upload"></i> Upload Resources
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // Initialize popovers
+    document.addEventListener('DOMContentLoaded', function() {
+        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+        var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl)
+        })
+    })
+</script>
+{% endblock %}
+
+{% endblock %} 

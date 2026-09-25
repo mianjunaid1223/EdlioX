@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}{% if discussion %}Edit Discussion{% else %}New Discussion{% endif %} - EdlioX{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">{% if discussion %}Edit Discussion{% else %}Create New Discussion{% endif %}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('discussions.create_discussion') if not discussion else url_for('discussions.edit_discussion', discussion_id=discussion.id) }}">
+                    {{ form.csrf_token }}
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control", value=(discussion.title if discussion else '')) }}
+                        {% if form.title.errors %}
+                            {% for error in form.title.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.content.label(class="form-label") }}
+                        {{ form.content(class="form-control", rows=10, value=(discussion.content if discussion else '')) }}
+                        {% if form.content.errors %}
+                            {% for error in form.content.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                        <div class="form-text">
+                            You can use Markdown formatting. 
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#markdownHelpModal">
+                                Learn more
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.tags.label(class="form-label") }}
+                        {{ form.tags(class="form-control", value=(discussion.tags|join(', ') if discussion else ''), placeholder="e.g., mathematics, physics, chemistry") }}
+                        {% if form.tags.errors %}
+                            {% for error in form.tags.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                        <div class="form-text">
+                            Separate tags with commas. Maximum 5 tags allowed.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.subject.label(class="form-label") }}
+                        {{ form.subject(class="form-select") }}
+                        {% if form.subject.errors %}
+                            {% for error in form.subject.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.grade_level.label(class="form-label") }}
+                        {{ form.grade_level(class="form-select") }}
+                        {% if form.grade_level.errors %}
+                            {% for error in form.grade_level.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.visibility.label(class="form-label") }}
+                        {{ form.visibility(class="form-select") }}
+                        {% if form.visibility.errors %}
+                            {% for error in form.visibility.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('discussions.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> {% if discussion %}Save Changes{% else %}Create Discussion{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Markdown Help Modal -->
+<div class="modal fade" id="markdownHelpModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Markdown Formatting Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Markdown</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>**bold text**</code></td>
+                                <td><strong>bold text</strong></td>
+                            </tr>
+                            <tr>
+                                <td><code>*italic text*</code></td>
+                                <td><em>italic text</em></td>
+                            </tr>
+                            <tr>
+                                <td><code># Heading 1</code></td>
+                                <td><h1>Heading 1</h1></td>
+                            </tr>
+                            <tr>
+                                <td><code>## Heading 2</code></td>
+                                <td><h2>Heading 2</h2></td>
+                            </tr>
+                            <tr>
+                                <td><code>[link text](url)</code></td>
+                                <td><a href="#">link text</a></td>
+                            </tr>
+                            <tr>
+                                <td><code>![alt text](image_url)</code></td>
+                                <td>Image</td>
+                            </tr>
+                            <tr>
+                                <td><code>`code`</code></td>
+                                <td><code>code</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>```python<br>def hello():<br>    print("Hello")<br>```</code></td>
+                                <td>
+                                    <pre><code class="language-python">def hello():
+    print("Hello")</code></pre>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>- List item</code></td>
+                                <td>
+                                    <ul>
+                                        <li>List item</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>1. Numbered item</code></td>
+                                <td>
+                                    <ol>
+                                        <li>Numbered item</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>> Blockquote</code></td>
+                                <td>
+                                    <blockquote>Blockquote</blockquote>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tag input
+    const tagInput = document.getElementById('tags');
+    const maxTags = 5;
+    
+    tagInput.addEventListener('input', function() {
+        const tags = this.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+        if (tags.length > maxTags) {
+            this.value = tags.slice(0, maxTags).join(', ');
+        }
+    });
+    
+    // Preview content as you type
+    const contentInput = document.getElementById('content');
+    const previewContainer = document.createElement('div');
+    previewContainer.className = 'mt-3 border p-3 rounded';
+    previewContainer.style.display = 'none';
+    contentInput.parentNode.insertBefore(previewContainer, contentInput.nextSibling);
+    
+    let previewTimeout;
+    contentInput.addEventListener('input', function() {
+        clearTimeout(previewTimeout);
+        previewTimeout = setTimeout(() => {
+            // Here you would typically use a Markdown parser library
+            // For now, we'll just show the raw content
+            previewContainer.textContent = this.value;
+            previewContainer.style.display = 'block';
+        }, 500);
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

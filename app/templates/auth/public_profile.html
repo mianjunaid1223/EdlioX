@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user.username }}'s Profile - EdlioX{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- User Profile Information -->
+    <div class="row mb-5 ">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-body pfpcard">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ profile_user.avatar_url or url_for('static', filename='images/default-avatar.png') }}" 
+                             alt="{{ profile_user.username }}" 
+                             class="rounded-circle me-4" 
+                             style="width: 120px; height: 120px; object-fit: cover;">
+                        <div>
+                            <h2 class="mb-2">{{ profile_user.username }}</h2>
+                            <p class="text-muted mb-1">
+
+                                {% if profile_user.country %}
+                                <span class="badge bg-light text-dark">{{ profile_user.country }}</span>
+                                {% endif %}
+                            </p>
+                            <p class="text-muted mb-0">Member since {{ profile_user.created_at.strftime('%B %Y') if profile_user.created_at else 'N/A' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="resources-tab" data-bs-toggle="tab" data-bs-target="#resources" type="button" role="tab" aria-controls="resources" aria-selected="true">
+                <i class="fas fa-file-alt me-2"></i>Resources
+                <span class="badge bg-light text-dark ms-2">{{ resources|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="discussions-tab" data-bs-toggle="tab" data-bs-target="#discussions" type="button" role="tab" aria-controls="discussions" aria-selected="false">
+                <i class="fas fa-comments me-2"></i>Discussions
+                <span class="badge bg-light text-dark ms-2">{{ discussions|length }}</span>
+            </button>
+        </li>
+    </ul>
+    
+    <!-- Custom styles for tabs and cards -->
+    <style>
+    
+
+        .pfpcard{
+            background-color: #f6f6ff;
+            background: linear-gradient(135deg, #c8c8c830 25%, transparent 25%) -13px 0/ 26px 26px, linear-gradient(225deg, #ebedff 25%, transparent 25%) -13px 0/ 26px 26px, linear-gradient(315deg, #dfdfdf55 25%, transparent 25%) 0px 0/ 26px 26px, linear-gradient(45deg, #ebedff 25%, #f6f6ff 25%) 0px 0/ 26px 26px;
+        } /* Tab styles */
+        .nav-tabs .nav-link.active {
+            color: #fff;
+            background-color: #007bff;
+            border-radius: 4px 4px 0 0;
+            transition: background-color 0.3s ease;
+            border: 1px solid #007bff;
+            font-weight: 600;
+        }
+        
+        .nav-tabs .nav-link {
+            color: #495057;
+            background-color: #005bb59a;
+            border-radius: 4px 4px 0 0;
+            border: 1px solid #dee2e6;
+            margin-right: 4px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .nav-tabs .nav-link:hover:not(.active) {
+            color: #495057;
+            background-color: #0052a378;
+            border-color: #dee2e6;
+        }
+        
+        .nav-tabs {
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 1px;
+        }
+        
+        /* Animate the tab transition */
+        .tab-pane {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Badge styling */
+        .badge {
+            font-weight: 500;
+        }
+        
+        /* Card hover effects */
+        .hover-effect {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.125);
+        }
+        
+        .hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+            border-color: #004590a7;
+        }
+        
+        /* Button hover effects */
+        .btn {
+            transition: all 0.3s ease;
+        }
+        
+        .card-title {
+            transition: color 0.3s ease;
+        }
+        
+        .hover-effect:hover .card-title {
+            color: #0056b3 !important;
+        }
+        
+        /* Icon styling */
+        .fas, .far {
+            transition: transform 0.3s ease;
+        }
+        
+        .hover-effect:hover .fas, .hover-effect:hover .far {
+            transform: scale(1.1);
+        }
+    </style>
+    
+    <!-- Tab Content -->
+    <div class="tab-content" id="profileTabsContent">
+        <!-- Resources Tab -->
+        <div class="tab-pane fade show active" id="resources" role="tabpanel" aria-labelledby="resources-tab">
+            <div class="row">
+                {% if resources %}
+                    {% for resource in resources %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm hover-effect">
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate text-primary fw-bold" title="{{ resource.title }}">
+                                    {{ resource.title|truncate(40, True, '...') }}
+                                </h5>
+                                <p class="card-text" style="height: 60px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; font-size: 0.9rem; color: #555;">
+                                    {{ resource.description|truncate(100, True, '...') }}
+                                </p>
+                                
+                                <div class="resource-stats d-flex justify-content-between align-items-center py-2 px-2 bg-light rounded mt-3">
+                                    <span class="badge bg-primary rounded-pill">
+                                        <i class="fas fa-file-alt me-1"></i> {{ resource.file_type|upper if resource.file_type else 'N/A' }}
+                                    </span>
+                                    <div class="d-flex gap-3 text-muted">
+                                        <span title="Views" class="d-flex align-items-center">
+                                            <i class="fas fa-eye me-1 text-primary"></i> <span>{{ resource.views|default(0) }}</span>
+                                        </span>
+                                        <span title="Downloads" class="d-flex align-items-center">
+                                            <i class="fas fa-download me-1 text-success"></i> <span>{{ resource.downloads|default(0) }}</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0 pt-0">
+                                <div class="d-grid gap-2">
+                                    <a href="{{ url_for('resources.view_resource', resource_id=resource.id) }}" class="btn btn-primary">
+                                        <i class="fas fa-eye me-1"></i> View Resource
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> {{ profile_user.username }} hasn't uploaded any resources yet.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Discussions Tab -->
+        <div class="tab-pane fade" id="discussions" role="tabpanel" aria-labelledby="discussions-tab">
+            <div class="row">
+                {% if discussions %}
+                    {% for discussion in discussions %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 shadow-sm hover-effect">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary fw-bold">{{ discussion.title|truncate(50, True, '...') }}</h5>
+                                <div class="d-flex align-items-center my-2">
+                                    {% if discussion.subject %}
+                                    <span class="badge bg-info text-dark me-2">{{ discussion.subject }}</span>
+                                    {% endif %}
+                                    {% if discussion.grade_level %}
+                                    <span class="badge bg-light text-dark me-2">{{ discussion.grade_level }}</span>
+                                    {% endif %}
+                                </div>
+                                <p class="card-text" style="height: 60px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; font-size: 0.9rem; color: #555;">
+                                    {{ discussion.content|striptags|truncate(150, True, '...') }}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center mt-3 py-2 px-2 bg-light rounded">
+                                    <div class="text-muted small">
+                                        <span class="me-3"><i class="fas fa-eye me-1 text-primary"></i> {{ discussion.views|default(0) }} views</span>
+                                        <span><i class="fas fa-comments me-1 text-info"></i> {{ discussion.comment_count|default(0) }} answers</span>
+                                    </div>
+                                    <small class="text-muted"><i class="far fa-calendar-alt me-1"></i> {{ discussion.created_at.strftime('%b %d, %Y') if discussion.created_at else 'N/A' }}</small>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent pt-0">
+                                <div class="d-grid gap-2">
+                                    <a href="{{ url_for('discussions.view_discussion', discussion_id=discussion._id|string) }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-arrow-right me-1"></i> View Discussion
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> {{ profile_user.username }} hasn't started any discussions yet.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

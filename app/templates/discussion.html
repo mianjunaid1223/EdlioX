@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Discussions - EdlioX{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="alert alert-info">
+        <p>Redirecting to discussions page...</p>
+        <p>If you are not redirected automatically, <a href="{{ url_for('discussions.index') }}">click here</a>.</p>
+    </div>
+</div>
+
+<script>
+    // Redirect to the discussions index page
+    window.location.href = "{{ url_for('discussions.index') }}";
+</script>
+{% endblock %}
+
+{% block head %}
+{{ super() }}
+<meta http-equiv="refresh" content="0;url={{ url_for('discussions.index') }}">
+{% endblock %} 

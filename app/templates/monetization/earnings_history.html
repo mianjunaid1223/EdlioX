@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Earnings History - EdlioX{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Earnings History</h2>
+        <a href="{{ url_for('monetization.monetization_dashboard') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Back to Monetization Hub
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Payment Records</h4>
+        </div>
+        <div class="card-body">
+            {% if payouts %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Payment ID</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payout in payouts %}
+                        <tr>
+                            <td>
+                                <span class="text-muted">{{ payout.id }}</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="far fa-calendar-alt text-info me-2"></i>
+                                    {{ datetime.fromtimestamp(payout.created).strftime('%b %d, %Y') }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-success">${{ "%.2f"|format(payout.amount) }}</span>
+                            </td>
+                            <td>
+                                {% if payout.status == 'paid' %}
+                                <span class="badge bg-success">Completed</span>
+                                {% elif payout.status == 'pending' %}
+                                <span class="badge bg-warning text-dark">Processing</span>
+                                {% elif payout.status == 'in_transit' %}
+                                <span class="badge bg-info">In Transit</span>
+                                {% elif payout.status == 'failed' %}
+                                <span class="badge bg-danger">Failed</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ payout.status|capitalize }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <p class="mb-0">You haven't received any payouts yet. Once you reach the minimum payout threshold ($50) and request a payment, your transaction history will appear here.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4 mb-lg-0">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">Payment Process</h4>
+                </div>
+                <div class="card-body">
+                    <ol class="timeline">
+                        <li class="timeline-item mb-4">
+                            <div class="d-flex">
+                                <div class="timeline-indicator bg-primary text-white rounded-circle">
+                                    1
+                                </div>
+                                <div class="ms-3">
+                                    <h5 class="mb-1">Accumulate Earnings</h5>
+                                    <p class="text-muted mb-0">Earn revenue from your published resources based on views and engagement.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="timeline-item mb-4">
+                            <div class="d-flex">
+                                <div class="timeline-indicator bg-primary text-white rounded-circle">
+                                    2
+                                </div>
+                                <div class="ms-3">
+                                    <h5 class="mb-1">Reach Threshold</h5>
+                                    <p class="text-muted mb-0">Build your balance to the minimum payout threshold of $50.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="timeline-item mb-4">
+                            <div class="d-flex">
+                                <div class="timeline-indicator bg-primary text-white rounded-circle">
+                                    3
+                                </div>
+                                <div class="ms-3">
+                                    <h5 class="mb-1">Request Payout</h5>
+                                    <p class="text-muted mb-0">Initiate a payout request from your Monetization Hub.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="timeline-item">
+                            <div class="d-flex">
+                                <div class="timeline-indicator bg-primary text-white rounded-circle">
+                                    4
+                                </div>
+                                <div class="ms-3">
+                                    <h5 class="mb-1">Receive Payment</h5>
+                                    <p class="text-muted mb-0">Funds are processed and sent to your connected payment method within 5-7 business days.</p>
+                                </div>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">Payment Information</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5 class="mb-3">Payment Method</h5>
+                        {% if current_user.stripe_account_id %}
+                        <div class="alert alert-success d-flex align-items-center">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <div>
+                                <p class="mb-0">Your Stripe payment account is connected and ready to receive payments.</p>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <div>
+                                <p class="mb-0">You haven't connected a payment method yet.</p>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('monetization.connect_stripe') }}" class="btn btn-primary">
+                            <i class="fab fa-stripe-s me-2"></i> Connect with Stripe
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <h5 class="mb-3">Frequently Asked Questions</h5>
+                        <div class="accordion" id="paymentFAQ">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                        How often can I request payments?
+                                    </button>
+                                </h2>
+                                <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#paymentFAQ">
+                                    <div class="accordion-body">
+                                        Once you reach the $50 threshold, you can request a payout at any time. There's no limit to how frequently you can request payouts as long as you meet the minimum threshold each time.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingTwo">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        How long do payments take to process?
+                                    </button>
+                                </h2>
+                                <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#paymentFAQ">
+                                    <div class="accordion-body">
+                                        Payments are typically processed within 5-7 business days after your request. The exact timing may vary depending on your bank and location.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingThree">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        Are there any fees for payouts?
+                                    </button>
+                                </h2>
+                                <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#paymentFAQ">
+                                    <div class="accordion-body">
+                                        EdlioX does not charge any fees for standard payouts. However, your bank may apply international transaction fees depending on your location.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+    font-weight: bold;
+}
+</style>
+{% endblock %} 

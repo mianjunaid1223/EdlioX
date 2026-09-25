@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Your Earnings - EdlioX{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Earnings Dashboard</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Monetization Status Card -->
+                    <div class="alert 
+                        {% if current_user.monetization_status == 'approved' %}
+                            alert-success
+                        {% elif current_user.monetization_status == 'pending' %}
+                            alert-warning
+                        {% elif current_user.monetization_status == 'rejected' %}
+                            alert-danger
+                        {% else %}
+                            alert-info
+                        {% endif %}">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h5 class="alert-heading">
+                                    {% if current_user.monetization_status == 'approved' %}
+                                        <i class="fas fa-check-circle me-2"></i> Your account is monetized!
+                                    {% elif current_user.monetization_status == 'pending' %}
+                                        <i class="fas fa-clock me-2"></i> Application in review
+                                    {% elif current_user.monetization_status == 'rejected' %}
+                                        <i class="fas fa-times-circle me-2"></i> Application rejected
+                                    {% else %}
+                                        <i class="fas fa-info-circle me-2"></i> Not eligible yet
+                                    {% endif %}
+                                </h5>
+                                <p class="mb-0">
+                                    {% if current_user.monetization_status == 'approved' %}
+                                        You're earning for all views on your resources.
+                                    {% elif current_user.monetization_status == 'pending' %}
+                                        We're reviewing your application. This usually takes 1-3 business days.
+                                    {% elif current_user.monetization_status == 'rejected' %}
+                                        Your application was rejected. You may reapply after 30 days.
+                                    {% else %}
+                                        You need 10,000 total resource views to be eligible for monetization.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Row -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="card bg-light h-100">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted">Total Views</h6>
+                                    <h2 class="mb-0">{{ current_user.total_views }}</h2>
+                                    <div class="progress mt-2" style="height: 6px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                            style="width: {{ (current_user.total_views / 10000 * 100) if current_user.total_views < 10000 else 100 }}%;" 
+                                            aria-valuenow="{{ current_user.total_views }}" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="10000">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">
+                                        {% if current_user.total_views < 10000 %}
+                                            {{ 10000 - current_user.total_views }} more views to qualify
+                                        {% else %}
+                                            Monetization eligible
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light h-100">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted">Pending Earnings</h6>
+                                    <h2 class="mb-0">${{ "%.2f"|format(current_user.pending_earnings|float) }}</h2>
+                                    <small class="text-muted">
+                                        {% if current_user.pending_earnings >= 50 %}
+                                            Eligible for payout
+                                        {% else %}
+                                            ${{ "%.2f"|format(50 - current_user.pending_earnings|float) }} until payout
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light h-100">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted">Total Earnings</h6>
+                                    <h2 class="mb-0">${{ "%.2f"|format(current_user.total_earnings|float) }}</h2>
+                                    <small class="text-muted">Lifetime earnings</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monetization Application Button -->
+                    {% if not current_user.monetization_status in ['approved', 'pending'] and current_user.total_views >= 10000 %}
+                    <div class="text-center mb-4">
+                        <form action="{{ url_for('monetization.apply_monetization') }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-dollar-sign me-2"></i> Apply for Monetization
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    <!-- Recent Payouts Table -->
+                    <h5 class="mb-3">Recent Payouts</h5>
+                    {% if payouts %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payout in payouts %}
+                                <tr>
+                                    <td>{{ payout.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>${{ "%.2f"|format(payout.amount) }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if payout.status == 'completed' %}
+                                                bg-success
+                                            {% elif payout.status == 'processing' %}
+                                                bg-warning
+                                            {% else %}
+                                                bg-secondary
+                                            {% endif %}">
+                                            {{ payout.status|title }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-light text-center">
+                        <p class="mb-0">No payouts yet. Once you're approved for monetization and meet the minimum payout threshold ($50), your payouts will appear here.</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Information Box -->
+                    <div class="card bg-light mt-4">
+                        <div class="card-body">
+                            <h5 class="card-title">How Monetization Works</h5>
+                            <ul class="mb-0">
+                                <li>You need at least 10,000 total resource views to be eligible for monetization.</li>
+                                <li>Once approved, you'll earn approximately $0.002 per view across all your resources.</li>
+                                <li>Earnings are paid when you reach a minimum of $50 in pending earnings.</li>
+                                <li>Payouts are processed on the 1st of each month for the previous month's earnings.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

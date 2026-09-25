@@ -1,0 +1,697 @@
+{% extends "base.html" %}
+
+{% block title %}EdlioX - Upload, Share & Discover Educational Resources{% endblock %}
+
+{% block meta_description %}EdlioX helps educators and students share knowledge through uploading study materials, engaging in discussions, and exploring educational resources. Join our global learning community today.{% endblock %}
+
+{% block meta_keywords %}education resources, study materials, learning platform, educational community, teacher resources, student resources, edliox{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Minimalist Search -->
+<div class="bg-primary text-white py-5 d-flex align-items-center position-relative hero-con" style="overflow: hidden; min-height: 80dvh;"> 
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 text-center mb-4 mb-md-5 hero-search">
+                <h1 class="display-5 display-md-4 fw-bold mb-3 mb-md-4">Level Up. Give Back. Cash In</h1>
+                <p class="lead mb-4 mb-md-5 px-2 mx-auto" style="max-width: 90%; font-size: 1rem;">Explore a world of educational resources at your fingertips. Find study materials, share teaching resources, and connect with a global community of learners.</p>
+                
+                <!-- Large Search Interface -->
+                <div class="row justify-content-center">
+                    <div class="col-11 col-md-10 col-lg-9">
+                        <form id="searchForm" method="GET" role="search">
+                            <div class="search-container">
+                                <input
+                                    type="text"
+                                    class="form-control search-input rounded-top border-0"
+                                    placeholder="Search for knowledge..."
+                                    id="searchInput"
+                                    name="q"
+                                >
+
+                                <div class="search-bottom-bar">
+                                    <div class="search-options">
+                                        <button
+                                            id="resourcesButton"
+                                            class="btn btn-option active"
+                                            type="button"
+                                            aria-label="Search resources"
+                                        >
+                                            <div class="option-icon-container">
+                                                <svg
+                                                    class="option-icon"
+                                                    stroke-linejoin="round"
+                                                    stroke-linecap="round"
+                                                    stroke-width="2"
+                                                    stroke="currentColor"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    height="16"
+                                                    width="16"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                                </svg>
+                                            </div>
+                                            <span class="option-text">Resources</span>
+                                        </button>
+                                        <button
+                                            id="discussionsButton"
+                                            class="btn btn-option"
+                                            type="button"
+                                            aria-label="Search discussions"
+                                        >
+                                            <div class="option-icon-container">
+                                                <svg
+                                                    class="option-icon"
+                                                    stroke-linejoin="round"
+                                                    stroke-linecap="round"
+                                                    stroke-width="2"
+                                                    stroke="currentColor"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    height="16"
+                                                    width="16"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                                </svg>
+                                            </div>
+                                            <span class="option-text">Discussions</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="search-submit-container">
+                                        <button
+                                            class="btn btn-submit"
+                                            type="submit"
+                                            aria-label="Search"
+                                        >
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-center gap-3 mt-3 mb-4 mb-md-5">
+                    {% if not current_user.is_authenticated %}
+                    
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Join Community
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create and Share Sections -->
+<div class="container py-5">
+    <div class="row">
+        <!-- Upload Resources Section -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center p-5">
+                    <i class="fas fa-file-upload fa-3x text-primary mb-4"></i>
+                    <h3 class="premium-heading mb-3">Upload Educational Resources</h3>
+                    <p class="mb-4">Share your knowledge with the world. Upload study guides, lesson plans, presentations, and more to help others learn.</p>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Multiple file formats supported</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Add detailed descriptions and tags</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Track views and downloads</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Monetization opportunities coming soon</li>
+                    </ul>
+                    <a href="{{ url_for('resources.upload_resource') }}" class="btn btn-primary">Upload Resources</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ask Questions Section -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center p-5">
+                    <i class="fas fa-question-circle fa-3x text-primary mb-4"></i>
+                    <h3 class="premium-heading mb-3">Ask Questions Publicly</h3>
+                    <p class="mb-4">Need help with a subject? Ask questions and get answers from our community of educators and students.</p>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Get help from subject matter experts</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Support for rich text formatting</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Add images and attachments</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Build your reputation in the community</li>
+                    </ul>
+                    <a href="{{ url_for('discussions.create_discussion') }}" class="btn btn-primary">Ask a Question</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monetization Announcement Card -->
+<div class="container py-5">
+    <div class="premium-card card shadow">
+        <div class="card-header-gradient">
+            <h4 class="mb-0 d-flex align-items-center premium-heading">
+                <i class="fas fa-rocket me-2"></i> 
+                Monetization Platform Launching Soon
+            </h4>
+        </div>
+        <div class="card-body text-center py-4">
+            <i class="fas fa-rocket text-primary fa-3x mb-3 rocket-animation"></i>
+            <h3 class="premium-heading mb-3">Exclusive Monetization Opportunity</h3>
+            <p class="premium-text mb-4">We're crafting an innovative platform to empower educators and content creators to monetize their valuable educational resources. Join us in revolutionizing how knowledge is shared and rewarded.</p>
+            
+            <button class="premium-button mx-auto" disabled data-bs-toggle="popover" 
+                    data-bs-trigger="hover" 
+                    data-bs-placement="top"
+                    data-bs-content="Our premium monetization platform is launching soon. Stay tuned for exclusive early access opportunities.">
+                <i class="fas fa-dollar-sign"></i> Monetization Hub
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="bg-light py-5">
+    <div class="container">
+    <h2 class="text-center mb-4">Why Choose EdlioX?</h2>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="text-center">
+                <i class="fas fa-share-alt fa-3x text-primary mb-3"></i>
+                <h4>Share Knowledge</h4>
+                <p>Upload and share your educational resources with the community.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="text-center">
+                <i class="fas fa-comments fa-3x text-primary mb-3"></i>
+                <h4>Engage in Discussions</h4>
+                <p>Connect with other educators and students through meaningful discussions.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="text-center">
+                <i class="fas fa-dollar-sign fa-3x text-primary mb-3"></i>
+                <h4>Monetize Content</h4>
+                <p>Earn from your high-quality educational content through our monetization program.</p>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<style>
+
+    /* Premium button styling */
+    .premium-button {
+        width: fit-content;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.2em 1.8rem;
+        cursor: pointer;
+        gap: 0.4rem;
+        font-weight: bold;
+        border-radius: 30px;
+        text-shadow: 2px 2px 3px rgb(136 0 136 / 50%);
+        background: linear-gradient(15deg, #880088, #aa2068, #cc3f47, #de6f3d, #f09f33, #de6f3d, #cc3f47, #aa2068, #880088) no-repeat;
+        background-size: 300%;
+        color: #fff;
+        border: none;
+        background-position: left center;
+        box-shadow: 0 30px 10px -20px rgba(0,0,0,.2);
+        transition: all .3s ease;
+        letter-spacing: 0.5px;
+    }
+
+    .premium-button:hover:not(:disabled) {
+        background-size: 320%;
+        background-position: right center;
+        color: #fff;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+
+    .premium-button:disabled {
+        opacity: 0.85;
+        cursor: not-allowed;
+    }
+
+    .premium-button:hover svg {
+        fill: #fff;
+    }
+
+    .premium-button svg, .premium-button i {
+        width: 23px;
+        fill: #f09f33;
+        transition: .3s ease;
+        margin-right: 8px;
+    }
+
+    /* Premium card styling */
+    .premium-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    }
+
+    .premium-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 45px -10px rgba(0,0,0,0.15);
+    }
+
+    .card-header-gradient {
+        background: linear-gradient(120deg, #880088, #aa2068);
+        color: white;
+        border-bottom: none;
+        padding: 1.8rem;
+    }
+
+    .rocket-animation {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+
+    .premium-text {
+        font-weight: 300;
+        letter-spacing: 0.3px;
+        line-height: 1.6;
+    }
+
+    .premium-heading {
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+        
+
+    .hero-con *{
+        z-index: 2;
+    }
+
+.hero-con {
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-con::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: 
+    radial-gradient(at 47% 69%, hsla(17,85%,65%,0.8) 0px, transparent 50%),
+    radial-gradient(at 9% 32%, hsla(222,90%,60%,0.9) 0px, transparent 50%),
+    radial-gradient(at 80% 20%, hsla(265,80%,70%,0.7) 0px, transparent 50%),
+    radial-gradient(at 30% 10%, hsla(140,70%,65%,0.6) 0px, transparent 60%);
+  background-size: 180% 180%;
+  animation: randomGradientAnimation 25s ease-in-out infinite alternate;
+}
+
+.hero-con::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: 
+    linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.05) 100%);
+  animation: overlayPulse 8s ease-in-out infinite;
+  opacity: 0.4;
+}
+
+@keyframes randomGradientAnimation {
+  0% {
+    background-position: 0% 0%;
+  }
+  20% {
+    background-position: 70% 30%;
+  }
+  40% {
+    background-position: 20% 80%;
+  }
+  60% {
+    background-position: 90% 50%;
+  }
+  80% {
+    background-position: 30% 90%;
+  }
+  100% {
+    background-position: 60% 10%;
+  }
+}
+
+@keyframes overlayPulse {
+  0% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+    /* Bootstrap-styled search interface - made more specific */
+    .hero-search .search-container {
+        display: flex;
+        flex-direction: column;
+        background-color: rgba(0, 0, 0, 0.05);
+        border-radius: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        margin-bottom: 2.5rem;
+        width: 100%;
+        max-width: 100%;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .hero-search .search-container:hover,
+    .hero-search .search-container:focus-within {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    }
+    
+    .hero-search .search-input {
+        height: 70px;
+        padding: 1rem 2rem;
+        background-color: #000;
+        color: #fff;
+        border-radius: 1.5rem 1.5rem 0 0 !important;
+        font-size: 1.25rem;
+        font-weight: 300;
+        letter-spacing: 0.02em;
+        transition: all 0.3s ease;
+    }
+    
+    @media (min-width: 768px) {
+        .hero-search .search-input {
+            height: 90px;
+            font-size: 1.5rem;
+        }
+    }
+    
+    .hero-search .search-input:focus {
+        box-shadow: none;
+        background-color: #000;
+        color: #fff;
+        transform: scale(1.02);
+        transition: transform 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+    
+    .hero-search .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+        transition: all 0.3s ease;
+    }
+    
+    .hero-search .search-input:focus::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+        transform: translateX(10px);
+    }
+    
+    .hero-search .search-bottom-bar {
+        height: 60px;
+        background-color: #000;
+        border-radius: 0 0 1.5rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 1rem;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    @media (min-width: 768px) {
+        .hero-search .search-bottom-bar {
+            height: 80px;
+            padding: 0 2rem;
+        }
+    }
+    
+    .hero-search .search-options {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    @media (min-width: 768px) {
+        .hero-search .search-options {
+        gap: 1.2rem;
+        }
+    }
+    
+    .hero-search .btn-option {
+        border-radius: 50rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.8rem;
+        height: 40px;
+        background-color: rgba(194, 194, 194, 0.15);
+        border: 1px solid #adadad;
+        color: #adadad !important;
+        transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+    
+    @media (min-width: 768px) {
+        .hero-search .btn-option {
+            gap: 0.8rem;
+            padding: 0.6rem 1.2rem;
+            height: 50px;
+        }
+    }
+    
+    .hero-search .btn-option:hover, 
+    .hero-search .btn-option:focus {
+        background-color: rgba(14, 165, 233, 0.25);
+        color: #0dcaf0;
+        transform: translateY(-2px) scale(1.05);
+    }
+    
+    .hero-search .btn-option.active {
+        background-color: rgba(14, 165, 233, 0.3);
+        border-color: #0dcaf0;
+        color: #0dcaf0;
+        animation: pulse 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.08); }
+        100% { transform: scale(1); }
+    }
+    
+    .hero-search .option-icon-container {
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    @media (min-width: 768px) {
+        .hero-search .option-icon-container {
+            width: 24px;
+            height: 24px;
+        }
+    }
+    
+    .hero-search .option-icon {
+        color: #0dcaf0;
+    }
+    
+    .hero-search .option-text {
+        font-size: 0.9rem;
+        color: #0dcaf0;
+        font-weight: 500;
+        display: none;
+    }
+    
+    @media (min-width: 576px) {
+        .hero-search .option-text {
+            display: inline;
+            font-size: 1rem;
+        }
+    }
+    
+    @media (min-width: 768px) {
+        .hero-search .option-text {
+            font-size: 1.1rem;
+        }
+    }
+    
+    .hero-search .search-submit-container {
+        position: absolute;
+        right: 1rem;
+    }
+    
+    @media (min-width: 768px) {
+        .hero-search .search-submit-container {
+        right: 2rem;
+        }
+    }
+    
+    .hero-search .btn-submit {
+        border-radius: 50%;
+        padding: 0.6rem;
+        width: 45px;
+        height: 45px;
+        background-color: rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 1);
+        border: none;
+        transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    @media (min-width: 768px) {
+        .hero-search .btn-submit {
+            padding: 0.75rem;
+            width: 60px;
+            height: 60px;
+        }
+    }
+    
+    .hero-search .btn-submit:hover, 
+    .hero-search .btn-submit:focus {
+        background-color: rgba(255, 255, 255, 0.25);
+        color: #fff;
+        transform: scale(1.1) rotate(5deg);
+    }
+    
+    .hero-search .btn-submit:active {
+        transform: scale(0.95);
+    }
+    
+    .hero-search .btn-submit i {
+        font-size: 1.3rem;
+        transition: all 0.3s ease;
+    }
+    
+    @media (min-width: 768px) {
+    .hero-search .btn-submit i {
+        font-size: 1.6rem;
+        }
+    }
+    
+    /* Remove outline on buttons */
+    button:focus {
+        outline: none;
+    }
+
+    /* Mobile optimization */
+    @media (max-width: 576px) {
+        .hero-con {
+            min-height: 85dvh !important;
+            padding-top: 2rem !important;
+            padding-bottom: 2rem !important;
+        }
+        
+        .hero-search h1 {
+            font-size: 2rem;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+        
+        .hero-search p.lead {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-search .btn-light {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+        }
+    }
+
+    /* Navbar profile icon media query */
+    @media (max-width: 768px) {
+        .navbar-profile-icon {
+            display: none !important;
+        }
+    }
+
+    /* Display utility classes for responsive typography */
+    .display-md-4 {
+        font-size: calc(1.275rem + 1.5vw);
+        font-weight: 300;
+        line-height: 1.2;
+    }
+
+    @media (min-width: 768px) {
+        .display-md-4 {
+            font-size: 2.5rem;
+        }
+        
+        .hero-search p.lead {
+            font-size: 1.25rem;
+        }
+    }
+</style>
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize popovers
+        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+        var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl)
+        });
+        
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        // Search option buttons functionality
+        const resourcesButton = document.getElementById('resourcesButton');
+        const discussionsButton = document.getElementById('discussionsButton');
+        const searchInput = document.getElementById('searchInput');
+        const searchForm = document.getElementById('searchForm');
+        
+        // Set initial form action
+        searchForm.action = "/resources/search";
+        
+        resourcesButton.addEventListener('click', function() {
+            // Resources search
+            searchInput.placeholder = "Search for resources...";
+            resourcesButton.classList.add('active');
+            discussionsButton.classList.remove('active');
+            searchForm.action = "/resources/search";
+        });
+        
+        discussionsButton.addEventListener('click', function() {
+            // Discussions search
+            searchInput.placeholder = "Search for discussions...";
+            discussionsButton.classList.add('active');
+            resourcesButton.classList.remove('active');
+            searchForm.action = "/discussions/";
+        });
+        
+        // Make Enter key submit the form
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchForm.submit();
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+{% endblock %} 

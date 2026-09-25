@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_title }} - EdlioX{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto text-center">
+            <div class="card shadow-sm">
+                <div class="card-body py-5">
+                    <h1 class="text-danger mb-4">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        {{ error_title }}
+                    </h1>
+                    
+                    <p class="lead mb-4">{{ error_message }}</p>
+                    
+                    <div class="alert alert-info">
+                        <h5>Possible reasons:</h5>
+                        <ul class="text-start">
+                            <li>The file might have been deleted or moved</li>
+                            <li>The file path might be incorrect</li>
+                            <li>The resource might not have an associated file</li>
+                        </ul>
+                        
+                        <h5 class="mt-3">What you can do:</h5>
+                        <ul class="text-start">
+                            <li>Contact the resource owner to report the issue</li>
+                            <li>Check if the resource has a Google Drive link you can access</li>
+                            <li>Try accessing the resource later</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{{ url_for('resources.list_resources') }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left"></i>
+                            Browse Other Resources
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

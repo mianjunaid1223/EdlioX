@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Resource Earnings - EdlioX{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            {% if resource %}
+                {{ resource.title }} - Performance Details
+            {% else %}
+                Resource Performance Details
+            {% endif %}
+        </h2>
+        <div>
+            <a href="{{ url_for('monetization.monetization_dashboard') }}" class="btn btn-primary me-2">
+                <i class="fas fa-dollar-sign"></i> Monetization Hub
+            </a>
+            <a href="{{ url_for('resources.resource_analytics') }}" class="btn btn-info">
+                <i class="fas fa-chart-bar"></i> Analytics Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Performance Metrics</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card h-100 shadow-sm border-info">
+                                <div class="card-body text-center">
+                                    <h3 class="card-title text-info">{{ stats.views }}</h3>
+                                    <p class="card-text">Total Audience Reach</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100 shadow-sm border-success">
+                                <div class="card-body text-center">
+                                    <h3 class="card-title text-success">{{ stats.downloads }}</h3>
+                                    <p class="card-text">Resource Utilization</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100 shadow-sm border-warning">
+                                <div class="card-body text-center">
+                                    <h3 class="card-title text-warning">
+                                        {% if stats.monetization_status == 'approved' %}
+                                            ${{ "%.2f"|format(stats.earnings) }}
+                                        {% else %}
+                                            $0.00
+                                        {% endif %}
+                                    </h3>
+                                    <p class="card-text">Total Earnings</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3">Earnings Breakdown</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <td>Earnings Rate</td>
+                                    <td class="text-end">${{ "%.2f"|format(0.20) }} per 1,000 views</td>
+                                </tr>
+                                <tr>
+                                    <td>Current Views</td>
+                                    <td class="text-end">{{ stats.views }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Calculated Earnings</td>
+                                    <td class="text-end">
+                                        {% if stats.monetization_status == 'approved' %}
+                                            ${{ "%.2f"|format(stats.earnings) }}
+                                        {% else %}
+                                            $0.00
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Views to Next Dollar</td>
+                                    {% if stats.monetization_status == 'approved' %}
+                                        {% set views_needed = (1 / 0.0002) - (stats.earnings % 1) / 0.0002 %}
+                                        <td class="text-end">{{ views_needed|int }}</td>
+                                    {% else %}
+                                        <td class="text-end">5,000</td>
+                                    {% endif %}
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">Monetization Status</h4>
+                </div>
+                <div class="card-body">
+                    {% if stats.monetization_status == 'approved' %}
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-check-circle me-2"></i> Monetized</h5>
+                        <p class="mb-0">This resource is actively earning revenue based on views.</p>
+                    </div>
+                    <p><strong>Approved:</strong> {{ stats.monetization_approved_at.strftime('%b %d, %Y') if stats.monetization_approved_at else 'N/A' }}</p>
+                    {% elif stats.monetization_status == 'pending' %}
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-clock me-2"></i> Review Pending</h5>
+                        <p class="mb-0">This resource is currently under review for monetization.</p>
+                    </div>
+                    <p><strong>Applied:</strong> {{ stats.monetization_applied_at.strftime('%b %d, %Y') if stats.monetization_applied_at else 'N/A' }}</p>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle me-2"></i> Not Monetized</h5>
+                        <p class="mb-0">This resource is not currently part of the monetization program.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">Growth Strategies</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-share-alt text-primary me-2"></i>
+                            <div>
+                                <strong>Share your resource</strong>
+                                <p class="small text-muted mb-0">Promote on social media to increase visibility</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-tag text-success me-2"></i>
+                            <div>
+                                <strong>Optimize your title & tags</strong>
+                                <p class="small text-muted mb-0">Make your resource more discoverable</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-pen text-info me-2"></i>
+                            <div>
+                                <strong>Update your content</strong>
+                                <p class="small text-muted mb-0">Regular updates keep content relevant</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-users text-warning me-2"></i>
+                            <div>
+                                <strong>Engage with discussions</strong>
+                                <p class="small text-muted mb-0">Respond to comments to build community</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

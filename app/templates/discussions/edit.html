@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Question - EdlioX{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Heading -->
+            <h1 class="h2 mb-4">Edit Your Question</h1>
+            
+            <!-- Question Form -->
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('discussions.edit_discussion', discussion_id=discussion.id) }}" id="editQuestionForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-bold">Title</label>
+                            <div class="form-text text-muted mb-2">
+                                Be specific and imagine you're asking a question to another person
+                            </div>
+                            <input type="text" class="form-control" id="title" name="title" 
+                                   placeholder="e.g., How do I solve this quadratic equation?" 
+                                   maxlength="150" required value="{{ discussion.title }}">
+                            <div class="form-text text-end"><span id="titleCount">{{ discussion.title|length }}</span>/150</div>
+                        </div>
+                        
+                        <!-- Subject & Grade Level -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="subject" class="form-label fw-bold">Subject</label>
+                                <input type="text" class="form-control" id="subject" name="subject" list="subjectOptions" required placeholder="Enter a subject" value="{{ discussion.subject }}">
+                                <datalist id="subjectOptions">
+                                    {% for subject in subjects %}
+                                    <option value="{{ subject }}">
+                                    {% endfor %}
+                                    <option value="Mathematics">
+                                    <option value="Physics">
+                                    <option value="Chemistry">
+                                    <option value="Biology">
+                                    <option value="Computer Science">
+                                    <option value="English">
+                                    <option value="History">
+                                    <option value="Geography">
+                                    <option value="Economics">
+                                    <option value="Other">
+                                </datalist>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="grade_level" class="form-label fw-bold">Grade Level</label>
+                                <input type="text" class="form-control" id="grade_level" name="grade_level" list="gradeLevelOptions" required placeholder="Enter a grade level" value="{{ discussion.grade_level }}">
+                                <datalist id="gradeLevelOptions">
+                                    {% for grade in grade_levels %}
+                                    <option value="{{ grade }}">
+                                    {% endfor %}
+                                    <option value="Grade 1">
+                                    <option value="Grade 2">
+                                    <option value="Grade 3">
+                                    <option value="Grade 4">
+                                    <option value="Grade 5">
+                                    <option value="Grade 6">
+                                    <option value="Grade 7">
+                                    <option value="Grade 8">
+                                    <option value="Grade 9">
+                                    <option value="Grade 10">
+                                    <option value="Grade 11">
+                                    <option value="Grade 12">
+                                    <option value="Undergraduate">
+                                    <option value="Master's">
+                                    <option value="PhD">
+                                    <option value="Higher Education">
+                                    <option value="General">
+                                </datalist>
+                            </div>
+                        </div>
+                        
+                        <!-- Question Details -->
+                        <div class="mb-3">
+                            <label for="content" class="form-label fw-bold">Question Details</label>
+                            <div class="form-text text-muted mb-2">
+                                Include all the information someone would need to answer your question
+                            </div>
+                            <div class="editor-toolbar mb-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-format="bold">
+                                    <i class="fas fa-bold"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-format="italic">
+                                    <i class="fas fa-italic"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-format="heading">
+                                    <i class="fas fa-heading"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-format="list-ul">
+                                    <i class="fas fa-list-ul"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-format="list-ol">
+                                    <i class="fas fa-list-ol"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-format="code">
+                                    <i class="fas fa-code"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-format="image">
+                                    <i class="fas fa-image"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-format="link">
+                                    <i class="fas fa-link"></i>
+                                </button>
+                            </div>
+                            <textarea class="form-control" id="content" name="content" rows="10" required
+                                      placeholder="Explain your question in detail. What have you tried? What are you confused about?">{{ discussion.content }}</textarea>
+                        </div>
+                        
+                        <!-- Tags -->
+                        <div class="mb-3">
+                            <label for="tags" class="form-label fw-bold">Tags</label>
+                            <div class="form-text text-muted mb-2">
+                                Add up to 5 tags to describe what your question is about
+                            </div>
+                            <input type="text" class="form-control" id="tags" name="tags" 
+                                   placeholder="e.g., algebra, equations, factoring"
+                                   value="{{ discussion.tags|join(', ') }}">
+                            <div class="form-text">Separate tags with commas</div>
+                        </div>
+                        
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('discussions.view_discussion', discussion_id=discussion.id) }}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4 d-none d-lg-block">
+            <div class="card">
+                <div class="card-header">
+                    Editing Tips
+                </div>
+                <div class="card-body">
+                    <h6>Make improvements to your question</h6>
+                    <ul class="small mb-4">
+                        <li>Clarify any points that may be confusing</li>
+                        <li>Add relevant information that was missing</li>
+                        <li>Fix any formatting or spelling issues</li>
+                        <li>Update with any progress you've made</li>
+                    </ul>
+                    
+                    <h6>Formatting</h6>
+                    <div class="small mb-1">Use <code>**bold**</code> for <strong>bold text</strong></div>
+                    <div class="small mb-1">Use <code>*italic*</code> for <em>italic text</em></div>
+                    <div class="small mb-1">Use <code>`code`</code> for <code>inline code</code></div>
+                    <div class="small mb-1">Use <code>```code blocks```</code> for code blocks</div>
+                    <div class="small mb-1">Use <code># Heading</code> for headings</div>
+                    
+                    <div class="alert alert-info mt-4 small">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Your edits will be visible immediately. Make sure to maintain the original meaning of your question.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Title character count
+    const titleInput = document.getElementById('title');
+    const titleCount = document.getElementById('titleCount');
+    
+    titleInput.addEventListener('input', function() {
+        titleCount.textContent = this.value.length;
+    });
+    
+    // Simple formatting buttons
+    const formatButtons = document.querySelectorAll('[data-format]');
+    const contentArea = document.getElementById('content');
+    
+    formatButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const format = this.getAttribute('data-format');
+            const startPos = contentArea.selectionStart;
+            const endPos = contentArea.selectionEnd;
+            const selectedText = contentArea.value.substring(startPos, endPos);
+            let formattedText = '';
+            
+            switch(format) {
+                case 'bold':
+                    formattedText = `**${selectedText}**`;
+                    break;
+                case 'italic':
+                    formattedText = `*${selectedText}*`;
+                    break;
+                case 'heading':
+                    formattedText = `## ${selectedText}`;
+                    break;
+                case 'list-ul':
+                    if (selectedText.trim() === '') {
+                        formattedText = '- Item 1\n- Item 2\n- Item 3';
+                    } else {
+                        formattedText = `- ${selectedText.split('\n').join('\n- ')}`;
+                    }
+                    break;
+                case 'list-ol':
+                    if (selectedText.trim() === '') {
+                        formattedText = '1. Item 1\n2. Item 2\n3. Item 3';
+                    } else {
+                        let lines = selectedText.split('\n');
+                        formattedText = lines.map((line, i) => `${i+1}. ${line}`).join('\n');
+                    }
+                    break;
+                case 'code':
+                    if (selectedText.includes('\n') || selectedText.trim() === '') {
+                        formattedText = `\`\`\`\n${selectedText || 'Code goes here'}\n\`\`\``;
+                    } else {
+                        formattedText = `\`${selectedText}\``;
+                    }
+                    break;
+                case 'image':
+                    formattedText = `![Image description](${selectedText || 'URL'})`;
+                    break;
+                case 'link':
+                    if (selectedText.trim() === '') {
+                        formattedText = `[Link text](URL)`;
+                    } else if (selectedText.match(/^https?:\/\//)) {
+                        formattedText = `[Link](${selectedText})`;
+                    } else {
+                        formattedText = `[${selectedText}](URL)`;
+                    }
+                    break;
+            }
+            
+            contentArea.value = contentArea.value.substring(0, startPos) + formattedText + contentArea.value.substring(endPos);
+            contentArea.focus();
+            
+            // Set cursor position for editing
+            let newCursorPos = startPos + formattedText.length;
+            if (format === 'code' && selectedText.trim() === '') {
+                newCursorPos = startPos + formattedText.indexOf('Code goes here');
+            } else if (format === 'link' && selectedText.trim() === '') {
+                newCursorPos = startPos + formattedText.indexOf('Link text') + 9;
+            }
+            
+            contentArea.selectionStart = newCursorPos;
+            contentArea.selectionEnd = newCursorPos;
+        });
+    });
+});
+</script>
+{% endblock %} 

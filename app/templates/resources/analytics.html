@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Resource Analytics - EdlioX{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>My Resource Analytics</h2>
+        <div>
+            <a href="{{ url_for('monetization.monetization_dashboard') }}" class="btn btn-primary me-2">
+                <i class="fas fa-dollar-sign"></i> Monetization Hub
+            </a>
+            <a href="{{ url_for('resources.my_resources') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to My Resources
+            </a>
+        </div>
+    </div>
+
+    {% if total_resources > 0 %}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card h-100 shadow border-primary">
+                <div class="card-body text-center">
+                    <h3 class="card-title text-primary">{{ total_resources }}</h3>
+                    <p class="card-text">Content Portfolio</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 shadow border-info">
+                <div class="card-body text-center">
+                    <h3 class="card-title text-info">{{ total_views }}</h3>
+                    <p class="card-text">Audience Reach</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 shadow border-success">
+                <div class="card-body text-center">
+                    <h3 class="card-title text-success">{{ total_downloads }}</h3>
+                    <p class="card-text">Resource Utilization</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 shadow border-warning">
+                <div class="card-body text-center">
+                    <h3 class="card-title text-warning">{{ "%.1f"|format(avg_views) }}</h3>
+                    <p class="card-text">Avg. Engagement</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h4 class="card-title mb-0">Top Performing Content</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Views</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for resource in resources|sort(attribute='views', reverse=True) %}
+                                {% if loop.index <= 5 %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('resources.view_resource', resource_id=resource.id) }}">
+                                            {{ resource.title }}
+                                        </a>
+                                    </td>
+                                    <td>{{ resource.views }}</td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h4 class="card-title mb-0">Most Downloaded Resources</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Downloads</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for resource in resources|sort(attribute='downloads', reverse=True) %}
+                                {% if loop.index <= 5 %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('resources.view_resource', resource_id=resource.id) }}">
+                                            {{ resource.title }}
+                                        </a>
+                                    </td>
+                                    <td>{{ resource.downloads }}</td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header bg-light">
+            <h4 class="card-title mb-0">Resource Performance Dashboard</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Views</th>
+                            <th>Downloads</th>
+                            <th>Conversion Rate (%)</th>
+                            <th>Published</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for resource in resources|sort(attribute='views', reverse=True) %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('resources.view_resource', resource_id=resource.id) }}">
+                                    {{ resource.title }}
+                                </a>
+                            </td>
+                            <td>{{ resource.views }}</td>
+                            <td>{{ resource.downloads }}</td>
+                            <td>
+                                {% if resource.views > 0 %}
+                                    {{ "%.1f"|format((resource.downloads / resource.views) * 100) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </td>
+                            <td>{{ resource.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('resources.edit_resource', resource_id=resource.id) }}" class="btn btn-warning">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('resources.view_resource', resource_id=resource.id) }}" class="btn btn-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <p>You haven't uploaded any resources yet, so there are no analytics to display.</p>
+        <a href="{{ url_for('resources.upload_resource') }}" class="btn btn-primary mt-2">Upload Your First Resource</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

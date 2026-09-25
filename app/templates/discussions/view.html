@@ -1,0 +1,839 @@
+{% extends "base.html" %}
+
+{% block title %}{{ discussion.title }} - Question & Answers | EdlioX{% endblock %}
+
+{% block meta_description %}{{ discussion.content|striptags|truncate(160, True) }} Find answers to academic questions on EdlioX.{% endblock %}
+
+{% block meta_keywords %}{{ discussion.title }}, {{ discussion.subject or '' }}, {{ discussion.grade_level or '' }}, {% for tag in discussion.tags %}{{ tag }}{% if not loop.last %}, {% endif %}{% endfor %}, academic questions, educational discussions{% endblock %}
+
+{% block og_title %}{{ discussion.title }} - EdlioX{% endblock %}
+{% block og_description %}{{ discussion.content|striptags|truncate(160, True) }}{% endblock %}
+
+{% block extra_head %}
+<!-- Add Marked.js for markdown rendering -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<!-- Add Highlight.js for code syntax highlighting -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/github.min.css">
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/highlight.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4" data-auth="{{ current_user.is_authenticated|tojson }}">
+    <!-- Inline voting system code -->
+    <script>
+    /**
+     * Discussion Voting System
+     * Handles upvoting and downvoting for discussions and comments
+     */
+    window.DiscussionVoting = {
+        // Get CSRF token directly from template
+        csrfToken: "{{ csrf_token() }}",
+        
+        // Handle vote button click (called directly from the onclick attribute)
+        handleVote: function(button, voteType, discussionId, commentId) {
+            // Prevent default behavior 
+            if (event) event.preventDefault();
+            
+            // Hard-code authentication check since we know user is logged in
+            // Server will verify auth status anyway
+            const actuallyAuthenticated = true;
+            
+            if (!actuallyAuthenticated) {
+                this.showNotification('You must be logged in to vote', 'error');
+                return;
+            }
+            
+            // Find the voting container
+            const votingContainer = button.closest('.voting-buttons');
+            
+            // Get buttons and score element
+            const upvoteBtn = votingContainer.querySelector('[data-vote-type="up"]');
+            const downvoteBtn = votingContainer.querySelector('[data-vote-type="down"]');
+            const scoreElement = votingContainer.querySelector('.score');
+            
+            // Disable buttons during submission
+            if (upvoteBtn) upvoteBtn.disabled = true;
+            if (downvoteBtn) downvoteBtn.disabled = true;
+            
+            // Determine URL based on whether it's a discussion or comment vote
+            const url = commentId
+                ? `/discussions/api/discussions/${discussionId}/comments/${commentId}/vote`
+                : `/discussions/api/discussions/${discussionId}/vote`;
+            
+            // Get CSRF token if it wasn't already set
+            const csrfToken = this.csrfToken || document.querySelector('meta[name="csrf-token"]')?.content;
+            
+            // Send the vote request
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': this.csrfToken
+                },
+                body: JSON.stringify({ vote_type: voteType })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Failed to register vote');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Update score
+                if (scoreElement) {
+                    scoreElement.textContent = data.score;
+                }
+                
+                // Update button states based on vote
+                if (data.has_upvoted) {
+                    upvoteBtn.querySelector('i').classList.add('text-success');
+                    downvoteBtn.querySelector('i').classList.remove('text-danger');
+                } else if (data.has_downvoted) {
+                    upvoteBtn.querySelector('i').classList.remove('text-success');
+                    downvoteBtn.querySelector('i').classList.add('text-danger');
+                } else {
+                    upvoteBtn.querySelector('i').classList.remove('text-success');
+                    downvoteBtn.querySelector('i').classList.remove('text-danger');
+                }
+            })
+            .catch(error => {
+                this.showNotification(error.message || 'Failed to register vote', 'error');
+            })
+            .finally(() => {
+                // Re-enable buttons
+                if (upvoteBtn) upvoteBtn.disabled = false;
+                if (downvoteBtn) downvoteBtn.disabled = false;
+            });
+        },
+        
+        // Show notification message
+        showNotification: function(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+            notification.innerHTML = `
+                <strong>${type === 'error' ? 'Error!' : 'Notice'}</strong> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // Add to container
+            const container = document.querySelector('.container');
+            if (container) {
+                container.insertBefore(notification, container.firstChild);
+                
+                // Auto-dismiss
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+        }
+    };
+    </script>
+    <div class="row">
+        <!-- Question and Answers -->
+        <div class="col-lg-9">
+            <!-- Breadcrumb Navigation -->
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('discussions.index') }}">Discussions</a></li>
+                    {% if discussion.subject %}
+                    <li class="breadcrumb-item"><a href="{{ url_for('discussions.index', subject=discussion.subject) }}">{{ discussion.subject }}</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active" aria-current="page">Question</li>
+                </ol>
+            </nav>
+            
+            <!-- Question Header -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1 class="h3 mb-0">{{ discussion.title }}</h1>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('discussions.ask_question') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Ask Question
+                </a>
+                {% endif %}
+            </div>
+            
+            <!-- Question Metadata -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 small text-muted">
+                <div>
+                    <span class="me-3"><i class="fas fa-eye me-1"></i> {{ discussion.views }} views</span>
+                    <span class="me-3"><i class="fas fa-comments me-1"></i> {{ discussion.comments|length }} answers</span>
+                    <span><i class="fas fa-calendar me-1"></i> Asked {{ discussion.created_at|timeago }}</span>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" id="shareBtn">
+                        <i class="fas fa-share-alt me-1"></i> Share
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Question Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Voting Column -->
+                        <div class="col-1 d-flex flex-column align-items-center">
+                            <div class="voting-buttons" data-discussion-id="{{ discussion.id }}">
+                                <button class="btn btn-link p-0 vote-btn upvote-btn" data-vote-type="up" data-voted="{{ 'true' if current_user.is_authenticated and current_user.id in discussion.votes.up else 'false' }}" title="This question shows research effort; it is useful and clear" {{ 'disabled' if not current_user.is_authenticated }} onclick="DiscussionVoting.handleVote(this, 'up', '{{ discussion.id }}', null)">
+                                    <i class="fas fa-chevron-up {{ 'text-success' if current_user.is_authenticated and current_user.id in discussion.votes.up }}"></i>
+                                </button>
+                                <div class="fs-4 fw-bold my-2 score">{{ discussion.score }}</div>
+                                <button class="btn btn-link p-0 vote-btn downvote-btn" data-vote-type="down" data-voted="{{ 'true' if current_user.is_authenticated and current_user.id in discussion.votes.down else 'false' }}" title="This question does not show any research effort; it is unclear or not useful" {{ 'disabled' if not current_user.is_authenticated }} onclick="DiscussionVoting.handleVote(this, 'down', '{{ discussion.id }}', null)">
+                                    <i class="fas fa-chevron-down {{ 'text-danger' if current_user.is_authenticated and current_user.id in discussion.votes.down }}"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Content Column -->
+                        <div class="col-11">
+                            <!-- Question Content -->
+                            <div class="question-content mb-4" style="white-space: pre-wrap; line-break: anywhere; text-wrap: balance;">
+                                {{ discussion.content|safe }}
+                            </div>
+                            
+                            <!-- Tags -->
+                            <div class="mb-3">
+                                {% if discussion.subject %}
+                                <a href="{{ url_for('discussions.index', subject=discussion.subject) }}" class="badge bg-light text-dark text-decoration-none me-1">
+                                    {{ discussion.subject }}
+                                </a>
+                                {% endif %}
+                                
+                                {% if discussion.grade_level %}
+                                <a href="{{ url_for('discussions.index', grade_level=discussion.grade_level) }}" class="badge bg-light text-dark text-decoration-none me-1">
+                                    {{ discussion.grade_level }}
+                                </a>
+                                {% endif %}
+                                
+                                {% for tag in discussion.tags %}
+                                <a href="{{ url_for('discussions.index', tag=tag) }}" class="badge bg-light text-dark text-decoration-none me-1">
+                                    {{ tag }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Question Controls -->
+                            <div class="d-flex justify-content-between small mt-4">
+                                <div>
+                                    {% if current_user.is_authenticated and (current_user.id == discussion.user_id or current_user.is_admin) %}
+                                    <a href="{{ url_for('discussions.edit_discussion', discussion_id=discussion.id) }}" class="me-2">Edit</a>
+                                    <a href="#" class="text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</a>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- User Card -->
+                                <div class="bg-light p-2 rounded" style="min-width: 200px;">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <a href="{{ url_for('auth.profile', username=discussion.username) }}">
+                                                <img src="{{ discussion.author.avatar_url or url_for('static', filename='images/default-avatar.png') }}" alt="{{ discussion.username }}" class="rounded-circle" width="32" height="32" style="object-fit: cover;">
+                                            </a>
+                                        </div>
+                                        <div class="flex-grow-1 ms-2">
+                                            <div>
+                                                <a href="{{ url_for('auth.profile', username=discussion.username) }}" class="fw-bold text-decoration-none">{{ discussion.username }}</a>
+                                            </div>
+                                            <div class="small text-muted">Asked {{ discussion.created_at|timeago }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Answers Section -->
+            <div class="answers-section">
+                <!-- Answer Count Header -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h5">{{ discussion.comments|length }} Answer{% if discussion.comments|length != 1 %}s{% endif %}</h2>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Sort by
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item sort-answers" href="#" data-sort="score">Top rated</a></li>
+                            <li><a class="dropdown-item sort-answers" href="#" data-sort="newest">Newest</a></li>
+                            <li><a class="dropdown-item sort-answers" href="#" data-sort="oldest">Oldest</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Answers List -->
+                {% for comment in discussion.comments %}
+                <div class="card mb-3" id="answer-{{ comment.id }}">
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Voting Column -->
+                            <div class="col-1 d-flex flex-column align-items-center">
+                                <div class="voting-buttons" data-comment-id="{{ comment.id }}" data-discussion-id="{{ discussion.id }}">
+                                    <button class="btn btn-link p-0 vote-btn upvote-btn" data-vote-type="up" data-voted="{{ 'true' if current_user.is_authenticated and current_user.id in comment.votes.up else 'false' }}" title="This answer is useful" {{ 'disabled' if not current_user.is_authenticated }} onclick="DiscussionVoting.handleVote(this, 'up', '{{ discussion.id }}', '{{ comment.id }}')">
+                                        <i class="fas fa-chevron-up {{ 'text-success' if current_user.is_authenticated and current_user.id in comment.votes.up }}"></i>
+                                    </button>
+                                    <div class="fs-4 fw-bold my-2 score" id="score-comment-{{ comment.id }}">{{ comment.score }}</div>
+                                    <button class="btn btn-link p-0 vote-btn downvote-btn" data-vote-type="down" data-voted="{{ 'true' if current_user.is_authenticated and current_user.id in comment.votes.down else 'false' }}" title="This answer is not useful" {{ 'disabled' if not current_user.is_authenticated }} onclick="DiscussionVoting.handleVote(this, 'down', '{{ discussion.id }}', '{{ comment.id }}')">
+                                        <i class="fas fa-chevron-down {{ 'text-danger' if current_user.is_authenticated and current_user.id in comment.votes.down }}"></i>
+                                    </button>
+                                    {% if comment.score > 0 and comment.score == most_voted_score %}
+                                    <button class="btn btn-link p-0 mt-2" title="This answer is useful">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Content Column -->
+                            <div class="col-11">
+                                <!-- Answer Content -->
+                                <div class="answer-content mb-4" style="white-space: pre-wrap; line-break: anywhere; text-wrap: balance;">
+                                    {{ comment.content|safe }}
+                                </div>
+                                
+                                <!-- Answer Controls -->
+                                <div class="d-flex justify-content-between small mt-4">
+                                    <div>
+                                        {% if current_user.is_authenticated and (current_user.id == comment.user_id or current_user.is_admin) %}
+                                        <a href="javascript:void(0)" onclick="openEditComment('{{ comment.id }}', '{{ discussion.id }}', this)" class="me-2">Edit</a>
+                                        <a href="javascript:void(0)" onclick="confirmDeleteComment('{{ comment.id }}', '{{ discussion.id }}')" class="text-danger me-2">Delete</a>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- User Card -->
+                                    <div class="bg-light p-2 rounded" style="min-width: 200px;">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0">
+                                                <a href="{{ url_for('auth.profile', username=comment.username) }}">
+                                                    <img src="{{ comment.author.avatar_url or url_for('static', filename='images/default-avatar.png') }}" alt="{{ comment.username }}" class="rounded-circle" width="32" height="32" style="object-fit: cover;">
+                                                </a>
+                                            </div>
+                                            <div class="flex-grow-1 ms-2">
+                                                <div>
+                                                    <a href="{{ url_for('auth.profile', username=comment.username) }}" class="fw-bold text-decoration-none">{{ comment.username }}</a>
+                                                </div>
+                                                <div class="small text-muted">Answered {{ comment.created_at|timeago }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Child Comments (Replies) -->
+                {% if comment.children %}
+                <div class="ms-5 mb-4">
+                    {% for child in comment.children %}
+                    <div class="card mb-2" id="reply-{{ child.id }}">
+                        <div class="card-body py-2">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3 d-flex flex-column align-items-center" style="width: 30px;">
+                                    <div class="voting-buttons" data-comment-id="{{ child.id }}" data-discussion-id="{{ discussion.id }}">
+                                        <button class="btn btn-link p-0 vote-btn upvote-btn btn-sm" data-vote-type="up" data-voted="{{ 'true' if current_user.is_authenticated and current_user.id in child.votes.up else 'false' }}" {{ 'disabled' if not current_user.is_authenticated }} onclick="DiscussionVoting.handleVote(this, 'up', '{{ discussion.id }}', '{{ child.id }}')">
+                                            <i class="fas fa-chevron-up {{ 'text-success' if current_user.is_authenticated and current_user.id in child.votes.up }}"></i>
+                                        </button>
+                                        <div class="small fw-bold score" id="score-comment-{{ child.id }}">{{ child.score }}</div>
+                                        <button class="btn btn-link p-0 vote-btn downvote-btn btn-sm" data-vote-type="down" data-voted="{{ 'true' if current_user.is_authenticated and current_user.id in child.votes.down else 'false' }}" {{ 'disabled' if not current_user.is_authenticated }} onclick="DiscussionVoting.handleVote(this, 'down', '{{ discussion.id }}', '{{ child.id }}')">
+                                            <i class="fas fa-chevron-down {{ 'text-danger' if current_user.is_authenticated and current_user.id in child.votes.down }}"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="mb-2" style="white-space: pre-wrap; line-break: anywhere; text-wrap: balance;">{{ child.content|safe }}</div>
+                                    <div class="d-flex justify-content-between align-items-center small">
+                                        <div>
+                                            <span class="text-muted">{{ child.created_at|timeago }}</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <a href="{{ url_for('auth.profile', username=child.username) }}">
+                                                <img src="{{ child.author.avatar_url or url_for('static', filename='images/default-avatar.png') }}" alt="{{ child.username }}" class="rounded-circle" width="16" height="16" style="object-fit: cover;">
+                                            </a>
+                                            <a href="{{ url_for('auth.profile', username=child.username) }}" class="ms-1 text-decoration-none">{{ child.username }}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endfor %}
+                
+                <!-- Your Answer Section -->
+                {% if current_user.is_authenticated %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h3 class="h5 mb-0">Your Answer</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('discussions.add_comment', discussion_id=discussion.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            
+                         
+                            
+                            <div class="mb-3">
+                                <textarea class="form-control" name="content" id="answer-content" rows="8" required placeholder="Write your answer here. Be clear and specific, and include examples if possible."></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Post Your Answer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <div class="card mt-4">
+                    <div class="card-body text-center py-4">
+                        <h3 class="h5 mb-3">Know the answer to this question?</h3>
+                        <p class="mb-3">Join our educational community to answer questions and help others learn.</p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="{{ url_for('auth.login') }}?next={{ request.path }}" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Log in
+                            </a>
+                            <a href="{{ url_for('auth.register') }}?next={{ request.path }}" class="btn btn-outline-primary">
+                                <i class="fas fa-user-plus me-2"></i>Sign up
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <!-- Related Questions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    Similar Questions
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for related in related_discussions %}
+                        <li class="list-group-item">
+                            <a href="{{ url_for('discussions.view_discussion', discussion_id=related.id) }}" class="text-decoration-none">
+                                {{ related.title }}
+                            </a>
+                            <div class="d-flex justify-content-between align-items-center mt-1 small">
+                                <span class="badge bg-secondary">{{ related.score }} votes</span>
+                                <span class="text-muted">{{ related.comments|length }} answers</span>
+                            </div>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-center text-muted py-3">No related questions found</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Community Guidelines -->
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Community Guidelines</h5>
+                    <ul class="small mb-0 ps-3">
+                        <li>Be respectful and constructive</li>
+                        <li>Provide evidence and cite sources</li>
+                        <li>Upvote helpful answers</li>
+                        <li>Flag inappropriate content</li>
+                        <li>Help others learn and grow</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Question</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this question? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('discussions.delete_discussion', discussion_id=discussion.id) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Share This Question</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="shareLink" class="form-label">Link to this question:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="shareLink" readonly value="{{ request.url }}">
+                        <button class="btn btn-outline-secondary" type="button" id="copyLinkBtn">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="https://twitter.com/intent/tweet?url={{ request.url|urlencode }}&text={{ discussion.title|urlencode }}" class="btn btn-outline-primary" target="_blank">
+                        <i class="fab fa-twitter me-2"></i>Twitter
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url|urlencode }}" class="btn btn-outline-primary" target="_blank">
+                        <i class="fab fa-facebook me-2"></i>Facebook
+                    </a>
+                    <a href="mailto:?subject={{ discussion.title|urlencode }}&body={{ request.url|urlencode }}" class="btn btn-outline-primary">
+                        <i class="fas fa-envelope me-2"></i>Email
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Comment Modal -->
+<div class="modal fade" id="editCommentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Your Answer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editCommentForm" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label for="editCommentContent" class="form-label">Content</label>
+                        <textarea class="form-control" name="content" id="editCommentContent" rows="8" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Function to confirm and handle comment deletion
+window.confirmDeleteComment = function(commentId, discussionId) {
+    if (confirm('Are you sure you want to delete this comment? This action cannot be undone.')) {
+        // Create a form to submit the delete request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/discussions/api/discussions/${discussionId}/comments/${commentId}/delete`;
+        form.style.display = 'none';
+        
+        // Add CSRF token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = document.querySelector('meta[name="csrf-token"]').content;
+        form.appendChild(csrfInput);
+        
+        // Append form to body and submit
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Function to open the edit comment modal
+window.openEditComment = function(commentId, discussionId, linkElement) {
+    // Get the comment content
+    const commentCard = linkElement.closest('.card');
+    const contentElement = commentCard.querySelector('.answer-content');
+    
+    // Get the raw HTML content (we need to handle the case where it might contain Markdown)
+    // For simplicity, we'll just do basic cleanup - in a real app, you might need a more sophisticated approach
+    let commentContent = contentElement.innerHTML.trim();
+    
+    // Basic cleanup - remove common HTML tags from rich text editors
+    commentContent = commentContent
+        .replace(/<p>(.*?)<\/p>/g, '$1\n\n')
+        .replace(/<br\s*\/?>/g, '\n')
+        .replace(/<div>(.*?)<\/div>/g, '$1\n')
+        .replace(/<li>(.*?)<\/li>/g, '- $1\n')
+        .replace(/<\/?[^>]+(>|$)/g, ''); // Remove remaining HTML tags
+        
+    // Decode HTML entities
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = commentContent;
+    commentContent = tempDiv.textContent;
+    
+    // Update the form action
+    const form = document.getElementById('editCommentForm');
+    form.action = `/discussions/api/discussions/${discussionId}/comments/${commentId}/edit`;
+    
+    // Set the textarea content
+    const textarea = document.getElementById('editCommentContent');
+    textarea.value = commentContent;
+    
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('editCommentModal'));
+    modal.show();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Get authentication status from the data attribute
+    const container = document.querySelector('.container');
+    const isAuthenticated = container.getAttribute('data-auth') === 'true';
+    
+    // Share button functionality
+    const shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', function() {
+            const shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+            shareModal.show();
+        });
+    }
+    
+    // Copy link button functionality
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+    if (copyLinkBtn) {
+        copyLinkBtn.addEventListener('click', function() {
+            const shareLink = document.getElementById('shareLink');
+            shareLink.select();
+            document.execCommand('copy');
+            
+            // Show copied feedback
+            const originalText = copyLinkBtn.innerHTML;
+            copyLinkBtn.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(function() {
+                copyLinkBtn.innerHTML = originalText;
+            }, 2000);
+        });
+    }
+    
+    // Sort answers functionality
+    const sortLinks = document.querySelectorAll('.sort-answers');
+    sortLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const sortBy = this.getAttribute('data-sort');
+            const commentsContainer = document.querySelector('.answers-section');
+            const commentCards = Array.from(commentsContainer.querySelectorAll('.card[id^="answer-"]'));
+            
+            // Sort the cards based on selected criteria
+            commentCards.sort(function(a, b) {
+                if (sortBy === 'score') {
+                    const scoreA = parseInt(a.querySelector('.score').textContent) || 0;
+                    const scoreB = parseInt(b.querySelector('.score').textContent) || 0;
+                    return scoreB - scoreA; // Higher scores first
+                } else if (sortBy === 'newest') {
+                    const dateA = new Date(a.querySelector('.text-muted').textContent.replace('Answered ', ''));
+                    const dateB = new Date(b.querySelector('.text-muted').textContent.replace('Answered ', ''));
+                    return dateB - dateA; // Newer comments first
+                } else if (sortBy === 'oldest') {
+                    const dateA = new Date(a.querySelector('.text-muted').textContent.replace('Answered ', ''));
+                    const dateB = new Date(b.querySelector('.text-muted').textContent.replace('Answered ', ''));
+                    return dateA - dateB; // Older comments first
+                }
+                return 0;
+            });
+            
+            // Remove all cards from container
+            commentCards.forEach(card => {
+                const nextElement = card.nextElementSibling;
+                if (nextElement && nextElement.classList.contains('ms-5')) {
+                    // Store the replies with the card for reordering
+                    card._replies = nextElement;
+                    nextElement.remove();
+                }
+                card.remove();
+            });
+            
+            // Re-add the cards in the new order
+            const answerCountHeader = commentsContainer.querySelector('.d-flex.justify-content-between');
+            commentCards.forEach(card => {
+                commentsContainer.insertBefore(card, answerCountHeader.nextElementSibling);
+                // Re-add replies if they exist
+                if (card._replies) {
+                    commentsContainer.insertBefore(card._replies, card.nextElementSibling);
+                }
+            });
+            
+            // Update active sort option
+            sortLinks.forEach(sl => sl.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // Initialize markdown rendering
+    marked.setOptions({
+        renderer: new marked.Renderer(),
+        highlight: function(code, lang) {
+            const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+            return hljs.highlight(code, { language }).value;
+        },
+        langPrefix: 'hljs language-',
+        pedantic: false,
+        gfm: true,
+        breaks: true,
+        sanitize: false,
+        smartypants: false,
+        xhtml: false
+    });
+
+    // Process markdown in question content
+    const questionContent = document.querySelector('.question-content');
+    if (questionContent) {
+        // Extract the original markdown from the HTML content
+        let originalText = questionContent.innerHTML;
+        // Use a more reliable way to preserve the original markdown
+        if (originalText.startsWith('<p>') && originalText.endsWith('</p>')) {
+            // If the content is already processed with paragraph tags,
+            // we need to convert it back to raw markdown first
+            originalText = originalText
+                .replace(/<p>(.*?)<\/p>/g, '$1\n\n')
+                .replace(/<br\s*\/?>/g, '\n')
+                .replace(/<pre><code>(.*?)<\/code><\/pre>/g, '```\n$1\n```')
+                .replace(/<code>(.*?)<\/code>/g, '`$1`')
+                .replace(/<strong>(.*?)<\/strong>/g, '**$1**')
+                .replace(/<em>(.*?)<\/em>/g, '*$1*')
+                .replace(/<h1>(.*?)<\/h1>/g, '# $1')
+                .replace(/<h2>(.*?)<\/h2>/g, '## $1')
+                .replace(/<h3>(.*?)<\/h3>/g, '### $1')
+                .replace(/<h4>(.*?)<\/h4>/g, '#### $1')
+                .replace(/<blockquote>(.*?)<\/blockquote>/g, '> $1')
+                .replace(/<ul>(.*?)<\/ul>/g, '$1')
+                .replace(/<ol>(.*?)<\/ol>/g, '$1')
+                .replace(/<li>(.*?)<\/li>/g, '- $1\n')
+                .replace(/<\/?[^>]+(>|$)/g, ''); // Remove remaining HTML tags
+        }
+        
+        // Now render the markdown using marked
+        questionContent.innerHTML = marked.parse(originalText);
+    }
+
+    // Process markdown in all answers
+    const answerContents = document.querySelectorAll('.answer-content');
+    answerContents.forEach(answerContent => {
+        let originalText = answerContent.innerHTML;
+        // Similar conversion for answers
+        if (originalText.startsWith('<p>') && originalText.endsWith('</p>')) {
+            originalText = originalText
+                .replace(/<p>(.*?)<\/p>/g, '$1\n\n')
+                .replace(/<br\s*\/?>/g, '\n')
+                .replace(/<pre><code>(.*?)<\/code><\/pre>/g, '```\n$1\n```')
+                .replace(/<code>(.*?)<\/code>/g, '`$1`')
+                .replace(/<strong>(.*?)<\/strong>/g, '**$1**')
+                .replace(/<em>(.*?)<\/em>/g, '*$1*')
+                .replace(/<h1>(.*?)<\/h1>/g, '# $1')
+                .replace(/<h2>(.*?)<\/h2>/g, '## $1')
+                .replace(/<h3>(.*?)<\/h3>/g, '### $1')
+                .replace(/<h4>(.*?)<\/h4>/g, '#### $1')
+                .replace(/<blockquote>(.*?)<\/blockquote>/g, '> $1')
+                .replace(/<ul>(.*?)<\/ul>/g, '$1')
+                .replace(/<ol>(.*?)<\/ol>/g, '$1')
+                .replace(/<li>(.*?)<\/li>/g, '- $1\n')
+                .replace(/<\/?[^>]+(>|$)/g, ''); // Remove remaining HTML tags
+        }
+        
+        // Now render the markdown using marked
+        answerContent.innerHTML = marked.parse(originalText);
+    });
+
+    // Initialize syntax highlighting on code blocks
+    document.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightBlock(block);
+    });
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/discussions.css') }}">
+<style>
+    /* Comment styles */
+    .answer-content, .question-content {
+        overflow-wrap: break-word;
+    }
+    
+    .answer-content pre, .question-content pre {
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        padding: 1rem;
+        overflow-x: auto;
+    }
+    
+    .answer-content code, .question-content code {
+        background-color: #f8f9fa;
+        border-radius: 3px;
+        padding: 0.2rem 0.4rem;
+    }
+    
+    .answer-content blockquote, .question-content blockquote {
+        border-left: 4px solid #ced4da;
+        padding-left: 1rem;
+        margin-left: 0;
+        color: #6c757d;
+    }
+    
+    /* Voting styles */
+    .voting-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .vote-btn {
+        background: none;
+        transition: all 0.2s ease;
+        color: #6c757d;
+    }
+    
+    .vote-btn:hover:not(:disabled) {
+        transform: scale(1.2);
+    }
+    
+    .vote-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .vote-btn[data-voted="true"] {
+        font-weight: bold;
+    }
+    
+    .upvote-btn:hover:not(:disabled) i {
+        color: #28a745 !important;
+    }
+    
+    .downvote-btn:hover:not(:disabled) i {
+        color: #dc3545 !important;
+    }
+    
+    .score {
+        margin: 0.25rem 0;
+        text-align: center;
+    }
+    
+    /* Sort dropdown active state */
+    .dropdown-item.active, .dropdown-item:active {
+        background-color: #007bff;
+        color: #fff;
+    }
+</style>
+{% endblock %}

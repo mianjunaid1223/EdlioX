@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}About EdlioX - Educational Resource Sharing Platform{% endblock %}
+
+{% block meta_description %}Learn about EdlioX, the platform dedicated to sharing educational materials. Our mission is to create a global community of educators and students who collaborate to enhance learning experiences.{% endblock %}
+
+{% block meta_keywords %}about EdlioX, educational platform, teaching community, resource sharing, learning community, educational mission{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="about-hero py-5 bg-primary text-white position-relative overflow-hidden">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-7 pe-lg-5" data-aos="fade-right" data-aos-duration="1000">
+                <h1 class="display-4 fw-bold mb-4">About EdlioX</h1>
+                <p class="lead mb-4">Empowering educators and students to share knowledge and create a global learning community.</p>
+                {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg">Join Our Community</a>
+                {% else %}
+                    <a href="{{ url_for('resources.upload_resource') }}" class="btn btn-light btn-lg">Share Your Knowledge</a>
+                {% endif %}
+            </div>
+            <div class="col-lg-5 d-none d-lg-block" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+                <img src="{{ url_for('static', filename='images/about-illustration.svg') }}" alt="Education Illustration" class="img-fluid" onerror="this.onerror=null; this.src='https://placehold.co/600x400/0066ff/white?text=Education'">
+            </div>
+        </div>
+    </div>
+    <!-- Abstract shape decorations -->
+    <div class="position-absolute top-0 end-0 d-none d-lg-block">
+        <svg width="350" height="350" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" opacity="0.1">
+            <path fill="white" d="M41.9,-53.5C55.3,-46.9,67.9,-35.7,72.8,-21.3C77.7,-6.9,75,10.7,67.4,25.2C59.9,39.8,47.4,51.3,33.3,57.6C19.1,63.9,3.3,65,-12.7,63C-28.7,60.9,-45,55.8,-57.9,44.7C-70.8,33.5,-80.4,16.8,-81.1,-0.4C-81.7,-17.6,-73.3,-35.2,-60.5,-42.4C-47.6,-49.5,-30.1,-46.1,-16.3,-52.1C-2.5,-58,11.6,-73.3,23.4,-71.3C35.2,-69.3,44.8,-49.9,41.9,-53.5Z" transform="translate(100 100)" />
+        </svg>
+    </div>
+    <div class="position-absolute bottom-0 start-0 d-none d-lg-block">
+        <svg width="300" height="300" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" opacity="0.1">
+            <path fill="white" d="M45.4,-51.3C60.6,-39.1,76,-25.6,81.4,-8.7C86.8,8.3,82.3,28.7,70.1,43.1C58,57.5,38.3,65.8,18.8,70.2C-0.7,74.5,-20,75,-36.6,66.9C-53.2,58.9,-67.1,42.4,-72.8,23.5C-78.5,4.6,-76,-16.6,-66.1,-32.9C-56.2,-49.3,-38.8,-60.8,-21.7,-71.7C-4.6,-82.5,12.2,-92.7,26.6,-87.1C41,-81.5,53,-63.1,45.4,-51.3Z" transform="translate(100 100)" />
+        </svg>
+    </div>
+</section>
+
+<!-- Mission Section -->
+<section class="py-5">
+    <div class="container" data-aos="fade-up">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold mb-4">Our Mission</h2>
+                    <div class="mx-auto" style="width: 50px; height: 3px; background-color: var(--primary-color); margin-bottom: 2rem;"></div>
+                    <p class="lead mb-0">EdlioX is dedicated to creating a global community of educators and students who share knowledge and resources to enhance learning experiences worldwide. We believe that education should be accessible to everyone, and our platform facilitates the sharing of high-quality educational content.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- What We Offer Section -->
+<section class="py-5 bg-light">
+    <div class="container" data-aos="fade-up">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <h2 class="text-center fw-bold mb-5">What We Offer</h2>
+                <div class="row g-4">
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="100">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex align-items-center p-4">
+                                <div class="feature-icon me-4 d-flex align-items-center justify-content-center bg-primary text-white rounded-circle" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-share-alt fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 class="h5 card-title mb-2">Resource Sharing</h3>
+                                    <p class="card-text mb-0">Upload and share educational materials with the community.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="200">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex align-items-center p-4">
+                                <div class="feature-icon me-4 d-flex align-items-center justify-content-center bg-primary text-white rounded-circle" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-comments fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 class="h5 card-title mb-2">Discussion Forums</h3>
+                                    <p class="card-text mb-0">Engage in meaningful discussions about educational topics.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="300">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex align-items-center p-4">
+                                <div class="feature-icon me-4 d-flex align-items-center justify-content-center bg-primary text-white rounded-circle" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-dollar-sign fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 class="h5 card-title mb-2">Monetization</h3>
+                                    <p class="card-text mb-0">Earn from your high-quality educational content.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="400">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex align-items-center p-4">
+                                <div class="feature-icon me-4 d-flex align-items-center justify-content-center bg-primary text-white rounded-circle" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-search fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 class="h5 card-title mb-2">Smart Search</h3>
+                                    <p class="card-text mb-0">Find relevant resources and discussions easily.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our Values Section -->
+<section class="py-5">
+    <div class="container" data-aos="fade-up">
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8 text-center">
+                <h2 class="fw-bold mb-4">Our Values</h2>
+                <div class="mx-auto" style="width: 50px; height: 3px; background-color: var(--primary-color); margin-bottom: 2rem;"></div>
+                <p>The core principles that guide everything we do at EdlioX.</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="card border-0 h-100 text-center hover-lift">
+                    <div class="card-body p-4">
+                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                            <i class="fas fa-award fa-2x text-primary"></i>
+                        </div>
+                        <h3 class="h5 mb-3">Quality</h3>
+                        <p class="mb-0">We maintain high standards for all content shared on our platform.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="card border-0 h-100 text-center hover-lift">
+                    <div class="card-body p-4">
+                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                            <i class="fas fa-users fa-2x text-primary"></i>
+                        </div>
+                        <h3 class="h5 mb-3">Community</h3>
+                        <p class="mb-0">We foster a supportive environment for learning and sharing.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="card border-0 h-100 text-center hover-lift">
+                    <div class="card-body p-4">
+                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                            <i class="fas fa-lightbulb fa-2x text-primary"></i>
+                        </div>
+                        <h3 class="h5 mb-3">Innovation</h3>
+                        <p class="mb-0">We continuously improve our platform to better serve our users.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="400">
+                <div class="card border-0 h-100 text-center hover-lift">
+                    <div class="card-body p-4">
+                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                            <i class="fas fa-universal-access fa-2x text-primary"></i>
+                        </div>
+                        <h3 class="h5 mb-3">Accessibility</h3>
+                        <p class="mb-0">We make education accessible to everyone, everywhere.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-primary text-white text-center position-relative overflow-hidden">
+    <div class="position-absolute top-0 start-50 translate-middle-x">
+        <svg width="400" height="400" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" opacity="0.1">
+            <path fill="white" d="M39.9,-65.7C51.9,-58.6,62.2,-47.8,69.5,-34.8C76.8,-21.9,81.1,-6.9,78.7,6.8C76.3,20.4,67.1,32.7,56.8,43.2C46.5,53.8,35.1,62.6,21.8,67.4C8.6,72.2,-6.5,73,-20.8,69.4C-35.1,65.8,-48.6,57.8,-59.3,46.1C-70,34.4,-77.9,19,-80.2,2.3C-82.5,-14.5,-79.3,-32.5,-69.5,-45.1C-59.8,-57.7,-43.6,-64.9,-28.5,-70.2C-13.5,-75.4,0.5,-78.7,13.5,-75.4C26.5,-72.1,38.5,-62.2,39.9,-65.7Z" transform="translate(100 100)" />
+        </svg>
+    </div>
+    <div class="container py-5 position-relative">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h2 class="display-5 fw-bold mb-4">Join Our Community</h2>
+                <p class="lead mb-5">Ready to start sharing your knowledge? Join our community today and help shape the future of education!</p>
+                <div>
+                    {% if not current_user.is_authenticated %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg me-3">Get Started</a>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg">Sign In</a>
+                    {% else %}
+                        <a href="{{ url_for('resources.upload_resource') }}" class="btn btn-light btn-lg">Upload Resource</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Custom CSS for hover-lift effect -->
+<style>
+    .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+    .about-hero {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #004dc9 100%);
+    }
+</style>
+{% endblock %} 

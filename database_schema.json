@@ -1,0 +1,140 @@
+{
+    "collections": {
+        "users": {
+            "description": "User accounts and profiles",
+            "fields": {
+                "_id": {"type": "ObjectId", "required": true},
+                "email": {"type": "string", "required": true, "unique": true},
+                "password_hash": {"type": "string", "required": true},
+                "username": {"type": "string", "required": true, "unique": true},
+                "created_at": {"type": "datetime", "required": true},
+                "monetization_status": {
+                    "type": "string",
+                    "enum": ["not_applied", "pending", "approved", "rejected"],
+                    "default": "not_applied"
+                },
+                "total_earnings": {"type": "float", "default": 0},
+                "pending_earnings": {"type": "float", "default": 0},
+                "stripe_account_id": {"type": "string"},
+                "last_payout_id": {"type": "string"},
+                "last_payout_amount": {"type": "float"},
+                "last_payout_date": {"type": "datetime"}
+            }
+        },
+        "resources": {
+            "description": "Study resources uploaded by users",
+            "fields": {
+                "_id": {"type": "ObjectId", "required": true},
+                "user_id": {"type": "ObjectId", "required": true, "ref": "users"},
+                "title": {"type": "string", "required": true},
+                "description": {"type": "string"},
+                "file_type": {"type": "string", "required": true},
+                "views": {"type": "integer", "default": 0},
+                "downloads": {"type": "integer", "default": 0},
+                "created_at": {"type": "datetime", "required": true},
+                "monetization_status": {
+                    "type": "string",
+                    "enum": ["not_monetized", "pending", "approved"],
+                    "default": "not_monetized"
+                },
+                "earnings": {"type": "float", "default": 0}
+            }
+        },
+        "monetization_requests": {
+            "description": "User applications for monetization",
+            "fields": {
+                "_id": {"type": "ObjectId", "required": true},
+                "user_id": {"type": "ObjectId", "required": true, "ref": "users"},
+                "status": {
+                    "type": "string",
+                    "enum": ["pending", "approved", "rejected"],
+                    "default": "pending"
+                },
+                "bank_details": {
+                    "account_holder_name": {"type": "string", "required": true},
+                    "account_number": {"type": "string", "required": true},
+                    "bank_name": {"type": "string", "required": true},
+                    "routing_number": {"type": "string", "required": true},
+                    "account_type": {"type": "string", "enum": ["checking", "savings"], "required": true}
+                },
+                "eligibility_metrics": {
+                    "total_views": {"type": "integer", "required": true},
+                    "total_resources": {"type": "integer", "required": true},
+                    "recent_resources": {"type": "integer", "required": true}
+                },
+                "applied_at": {"type": "datetime", "required": true},
+                "processed_at": {"type": "datetime"},
+                "processed_by": {"type": "ObjectId", "ref": "users"},
+                "rejection_reason": {"type": "string"}
+            }
+        },
+        "payouts": {
+            "description": "Record of user payouts",
+            "fields": {
+                "_id": {"type": "ObjectId", "required": true},
+                "user_id": {"type": "ObjectId", "required": true, "ref": "users"},
+                "amount": {"type": "float", "required": true},
+                "status": {
+                    "type": "string",
+                    "enum": ["pending", "processing", "completed", "failed"],
+                    "default": "pending"
+                },
+                "stripe_payout_id": {"type": "string"},
+                "requested_at": {"type": "datetime", "required": true},
+                "processed_at": {"type": "datetime"},
+                "failure_reason": {"type": "string"}
+            }
+        }
+    },
+    "relationships": {
+        "user_resources": {
+            "description": "One-to-many relationship between users and resources",
+            "from": "users._id",
+            "to": "resources.user_id"
+        },
+        "user_monetization_requests": {
+            "description": "One-to-many relationship between users and monetization requests",
+            "from": "users._id",
+            "to": "monetization_requests.user_id"
+        },
+        "user_payouts": {
+            "description": "One-to-many relationship between users and payouts",
+            "from": "users._id",
+            "to": "payouts.user_id"
+        }
+    },
+    "indexes": {
+        "users": [
+            {"email": 1},
+            {"username": 1},
+            {"monetization_status": 1}
+        ],
+        "resources": [
+            {"user_id": 1},
+            {"created_at": -1},
+            {"monetization_status": 1}
+        ],
+        "monetization_requests": [
+            {"user_id": 1},
+            {"status": 1},
+            {"applied_at": -1}
+        ],
+        "payouts": [
+            {"user_id": 1},
+            {"status": 1},
+            {"requested_at": -1}
+        ]
+    },
+    "usage_notes": {
+        "monetization_requests": {
+            "querying": "Use status field to filter requests by their current state",
+            "updating": "Update status and processed_at when processing requests",
+            "external_management": "Can be managed through a separate admin dashboard"
+        },
+        "payouts": {
+            "querying": "Use status field to track payout progress",
+            "updating": "Update status and processed_at when payout is completed",
+            "external_management": "Can be managed through Stripe dashboard"
+        }
+    }
+} 

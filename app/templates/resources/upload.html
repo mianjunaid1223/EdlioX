@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Resource - EdlioX{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center mb-0">Upload Resource</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('resources.upload_resource') }}" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+                        {% for error in form.title.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=4) }}
+                        {% for error in form.description.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.country.label(class="form-label") }}
+                            {{ form.country(class="form-select" + (" is-invalid" if form.country.errors else "")) }}
+                            {% for error in form.country.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.subject.label(class="form-label") }}
+                            {{ form.subject(class="form-control" + (" is-invalid" if form.subject.errors else ""), list="subjectOptions") }}
+                            <small class="text-muted">{{ form.subject.description }}</small>
+                            <datalist id="subjectOptions">
+                                <option value="Mathematics">
+                                <option value="Physics">
+                                <option value="Chemistry">
+                                <option value="Biology">
+                                <option value="Computer Science">
+                                <option value="English">
+                                <option value="History">
+                                <option value="Geography">
+                                <option value="Economics">
+                            </datalist>
+                            {% for error in form.subject.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.grade_level.label(class="form-label") }}
+                        {{ form.grade_level(class="form-control" + (" is-invalid" if form.grade_level.errors else ""), list="gradeLevelOptions") }}
+                        <small class="text-muted">{{ form.grade_level.description }}</small>
+                        <datalist id="gradeLevelOptions">
+                            <option value="Grade 1">
+                            <option value="Grade 2">
+                            <option value="Grade 3">
+                            <option value="Grade 4">
+                            <option value="Grade 5">
+                            <option value="Grade 6">
+                            <option value="Grade 7">
+                            <option value="Grade 8">
+                            <option value="Grade 9">
+                            <option value="Grade 10">
+                            <option value="Grade 11">
+                            <option value="Grade 12">
+                            <option value="Undergraduate">
+                            <option value="Master's">
+                            <option value="PhD">
+                        </datalist>
+                        {% for error in form.grade_level.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.tags.label(class="form-label") }}
+                        {{ form.tags(class="form-control" + (" is-invalid" if form.tags.errors else "")) }}
+                        <div class="form-text">Separate tags with commas</div>
+                        {% for error in form.tags.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.resource_type.label(class="form-label") }}
+                        {{ form.resource_type(class="form-select" + (" is-invalid" if form.resource_type.errors else "")) }}
+                        {% for error in form.resource_type.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.drive_link.label(class="form-label") }}
+                        {{ form.drive_link(class="form-control" + (" is-invalid" if form.drive_link.errors else "")) }}
+                        <div class="form-text">Provide a Google Drive link to your resource. Make sure the link is publicly accessible.</div>
+                        {% for error in form.drive_link.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %} 

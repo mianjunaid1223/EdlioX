@@ -1,0 +1,487 @@
+{% extends "base.html" %}
+
+{% block title %}{% if query %}{{ query }} - Search Results{% else %}Educational Resources{% endif %} | EdlioX{% endblock %}
+
+{% block meta_description %}{% if query %}Browse search results for {{ query }} - {% else %}Discover and download free educational resources {% endif %}including study materials, lesson plans, worksheets, and more on EdlioX.{% endblock %}
+
+{% block meta_keywords %}{% if query %}{{ query }}, search results, {% endif %}educational resources, study materials, teaching resources, learning materials, free resources, download resources{% endblock %}
+
+{% block head %}
+<style>
+    /* Resource Card Styles */
+    .hover-effect {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.08);
+    }
+    
+    .hover-effect:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        border-color: rgba(0,0,0,0);
+    }
+    
+    .card-title {
+        color: #333;
+        border-bottom: 2px solid transparent;
+        display: inline-block;
+        padding-bottom: 5px;
+        transition: all 0.2s ease;
+    }
+    
+    .hover-effect:hover .card-title {
+        border-bottom-color: #007bff;
+    }
+    
+    .avatar-circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .avatar-circle-sm {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+    
+    .resource-stats {
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .description-box {
+        color: #666;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    /* Button styles */
+    .btn-group .btn {
+        border-radius: 4px;
+        margin: 0 2px;
+        padding: 8px 15px;
+        transition: all 0.2s;
+    }
+    
+    .btn-group .btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .btn-primary {
+        background-color: #0d6efd;
+    }
+    
+    .btn-success {
+        background-color: #198754;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .col-md-4 {
+            margin-bottom: 20px;
+        }
+    }
+    
+    /* Sort select styles */
+    .sort-select-container {
+        display: flex;
+        align-items: center;
+    }
+    
+    .sort-select {
+        padding: 0.5rem 2rem 0.5rem 1rem;
+        border-radius: 0.375rem;
+        border: 1px solid #d1d5db;
+        background-color: #fff;
+        color: #374151;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        cursor: pointer;
+        min-width: 180px;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        background-size: 1.5em 1.5em;
+    }
+    
+    .sort-select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .sort-label {
+        margin-right: 0.75rem;
+        font-weight: 500;
+        color: #4b5563;
+    }
+    
+    /* Load More Button Styles */
+    .load-more-container {
+        display: flex;
+        justify-content: center;
+        margin: 30px 0;
+        position: relative;
+    }
+    
+    .btn-load-more {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        padding: 12px 28px;
+        border-radius: 12px;
+        font-weight: 600;
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        border: none;
+        cursor: pointer;
+        z-index: 1;
+    }
+    
+    .btn-load-more::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .btn-load-more:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.6);
+    }
+    
+    .btn-load-more:hover::before {
+        opacity: 1;
+    }
+    
+    .btn-load-more:active {
+        transform: translateY(0);
+        box-shadow: 0 5px 15px -5px rgba(99, 102, 241, 0.4);
+    }
+    
+    .btn-load-more .spinner {
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s linear infinite;
+        display: none;
+    }
+    
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    .btn-load-more.loading .spinner {
+        display: inline-block;
+    }
+    
+    .btn-load-more.loading .btn-text {
+        display: none;
+    }
+    
+    .btn-load-more .icon {
+        transition: transform 0.3s ease;
+    }
+    
+    .btn-load-more:hover .icon {
+        transform: translateY(3px);
+    }
+    
+    .more-indicator {
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 5px;
+    }
+    
+    .more-indicator span {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #6366f1;
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+    
+    .more-indicator span:nth-child(1) {
+        animation-delay: 0s;
+    }
+    
+    .more-indicator span:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    
+    .more-indicator span:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+    
+    .pulse-effect {
+        animation: pulse-effect 0.8s infinite;
+    }
+    
+    @keyframes pulse-effect {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% if query %}
+        <h1>Search Results for "{{ query }}"</h1>
+    {% else %}
+        <h1>Study Resources</h1>
+    {% endif %}
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <div class="row mt-4">
+        <div class="col-md-12 mb-4 d-flex justify-content-between align-items-center">
+            <div>
+                <a href="{{ url_for('resources.create_resource') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New Resource
+                </a>
+                {% if query %}
+                    <a href="{{ url_for('resources.list_resources') }}" class="btn btn-secondary ms-2">
+                        <i class="fas fa-arrow-left"></i> Back to All Resources
+                    </a>
+                {% endif %}
+            </div>
+            
+            <!-- View Toggle Buttons - Added for consistency with search.html -->
+            <div class="btn-group me-3">
+                <button type="button" class="btn btn-outline-primary active" onclick="toggleView('grid')">
+                    <i class="fas fa-th"></i>
+                </button>
+                <button type="button" class="btn btn-outline-primary" onclick="toggleView('list')">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+            
+            <!-- Sort Select -->
+            <div class="sort-select-container">
+                <form method="get" action="{{ url_for('resources.search' if query else 'resources.list_resources') }}" id="sort-form">
+                    {% if query %}
+                        <input type="hidden" name="q" value="{{ query }}">
+                    {% endif %}
+                    {% if pagination and pagination.per_page %}
+                        <input type="hidden" name="per_page" value="{{ pagination.per_page }}">
+                    {% endif %}
+                    <div class="d-flex align-items-center">
+                        <label for="sort-select" class="sort-label"><i class="fas fa-sort me-2"></i> Sort By:</label>
+                        <select name="sort" id="sort-select" class="sort-select" onchange="document.getElementById('sort-form').submit();">
+                            <option value="recent" {% if current_sort == 'recent' or not current_sort %}selected{% endif %}>Most Recent</option>
+                            <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Oldest First</option>
+                            <option value="most_views" {% if current_sort == 'most_views' %}selected{% endif %}>Most Views</option>
+                            <option value="most_downloads" {% if current_sort == 'most_downloads' %}selected{% endif %}>Most Downloads</option>
+                            <option value="title_asc" {% if current_sort == 'title_asc' %}selected{% endif %}>Title (A-Z)</option>
+                            <option value="title_desc" {% if current_sort == 'title_desc' %}selected{% endif %}>Title (Z-A)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Resources Container with Grid and List Views -->
+        {% if resources %}
+            <div id="grid-view" class="row">
+                {% include 'resources/resource_cards.html' %}
+            </div>
+            
+            <div id="list-view" class="d-none">
+                {% for resource in resources %}
+                <div class="card mb-3">
+                    <div class="row g-0">
+                        {% if resource.thumbnail_url %}
+                        <div class="col-md-3">
+                            <img src="{{ resource.thumbnail_url }}" class="img-fluid rounded-start" alt="{{ resource.title }}">
+                        </div>
+                        {% endif %}
+                        <div class="col-md-{% if resource.thumbnail_url %}9{% else %}12{% endif %}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ resource.title }}</h5>
+                                <p class="card-text">{{ resource.description[:200] }}{% if resource.description|length > 200 %}...{% endif %}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        {% if resource.author and resource.author.username %}
+                                            <a href="{{ url_for('auth.profile', username=resource.author.username) }}" class="me-2">
+                                                <img src="{{ resource.author.avatar_url or url_for('static', filename='images/default-avatar.png') }}" 
+                                                     alt="{{ resource.author.username }}" 
+                                                     class="rounded-circle" 
+                                                     style="width: 35px; height: 35px; object-fit: cover;">
+                                            </a>
+                                            <div>
+                                                <a href="{{ url_for('auth.profile', username=resource.author.username) }}" class="text-decoration-none">
+                                                    <span class="text-muted">{{ resource.author.username }}</span>
+                                                </a>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-eye"></i> {{ resource.views }} views
+                                                </small>
+                                            </div>
+                                        {% else %}
+                                            <img src="{{ url_for('static', filename='images/default-avatar.png') }}" 
+                                                 alt="Anonymous" 
+                                                 class="rounded-circle me-2" 
+                                                 style="width: 35px; height: 35px; object-fit: cover;">
+                                            <div>
+                                                <span class="text-muted">Anonymous</span>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-eye"></i> {{ resource.views }} views
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <a href="{{ url_for('resources.view_resource', resource_id=resource.id) }}" class="btn btn-primary">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    {% if query %}
+                        No resources found matching "{{ query }}". Try a different search term.
+                    {% else %}
+                        No resources available yet. Be the first to add one!
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Items Per Page Control -->
+        {% if resources %}
+        <div class="d-flex justify-content-end mb-3">
+            <form method="get" action="{{ url_for('resources.search' if query else 'resources.list_resources') }}" class="d-flex align-items-center">
+                {% if query %}
+                <input type="hidden" name="q" value="{{ query }}">
+                {% endif %}
+                <input type="hidden" name="sort" value="{{ current_sort }}">
+                <label for="per_page" class="me-2 text-muted small">Items per page:</label>
+                <select name="per_page" id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                    <option value="5" {% if pagination.per_page == 5 %}selected{% endif %}>5</option>
+                    <option value="10" {% if pagination.per_page == 10 %}selected{% endif %}>10</option>
+                    <option value="15" {% if pagination.per_page == 15 %}selected{% endif %}>15</option>
+                    <option value="20" {% if pagination.per_page == 20 %}selected{% endif %}>20</option>
+                </select>
+            </form>
+        </div>
+        {% endif %}
+        
+        <!-- Pagination -->
+        {% if pagination and pagination.pages > 1 %}
+        <nav aria-label="Page navigation" class="my-4">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('resources.search' if query else 'resources.list_resources', page=pagination.prev_num, sort=current_sort, per_page=pagination.per_page, q=query) }}">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-chevron-left"></i> Previous</span>
+                </li>
+                {% endif %}
+                
+                {% for page in pagination.iter_pages() %}
+                    {% if page %}
+                        <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('resources.search' if query else 'resources.list_resources', page=page, sort=current_sort, per_page=pagination.per_page, q=query) }}">
+                                {{ page }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('resources.search' if query else 'resources.list_resources', page=pagination.next_num, sort=current_sort, per_page=pagination.per_page, q=query) }}">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Next <i class="fas fa-chevron-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleView(view) {
+    const gridView = document.getElementById('grid-view');
+    const listView = document.getElementById('list-view');
+    const buttons = document.querySelectorAll('.btn-group .btn');
+    
+    if (view === 'grid') {
+        gridView.classList.remove('d-none');
+        listView.classList.add('d-none');
+        buttons[0].classList.add('active');
+        buttons[1].classList.remove('active');
+    } else {
+        gridView.classList.add('d-none');
+        listView.classList.remove('d-none');
+        buttons[0].classList.remove('active');
+        buttons[1].classList.add('active');
+    }
+}
+</script>
+{% endblock %}

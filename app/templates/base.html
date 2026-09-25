@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=0.7">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    {% if current_user.is_authenticated %}
+    <meta name="user-id" content="{{ current_user.id }}">
+    {% endif %}
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="{% block meta_description %}EdlioX - Upload, share, and discover educational resources. Join our community of educators and students.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}education, study resources, learning platform, teaching materials, educational community{% endblock %}">
+    <meta name="author" content="EdlioX">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="{% block og_title %}{% block title %}EdlioX{% endblock %}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}EdlioX - Upload, share, and discover educational resources. Join our community of educators and students.{% endblock %}">
+    <meta property="og:image" content="{{ url_for('static', filename='images/og-image.jpg', _external=True) }}">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.url }}">
+    <meta property="twitter:title" content="{% block twitter_title %}{{ self.title() }}{% endblock %}">
+    <meta property="twitter:description" content="{% block twitter_description %}{{ self.meta_description() }}{% endblock %}">
+    <meta property="twitter:image" content="{{ url_for('static', filename='images/og-image.jpg', _external=True) }}">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{ request.url }}">
+    
+    <title>{{ self.title() }}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <!-- AOS - Animate On Scroll Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #0066ff;
+            --primary-hover: #0052cc;
+            --content-spacing: 4rem;
+            --section-spacing: 6rem;
+            --element-spacing: 1.5rem;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.7;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        
+        /* Navbar styling */
+        .navbar {
+            padding: 0.5rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background-color: var(--primary-color) !important;
+        }
+        
+        .navbar-brand {
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            padding: 0.5rem 0;
+        }
+        
+        .nav-link {
+            padding: 0.5rem 1rem;
+            margin: 0 0.3rem;
+            font-weight: 500;
+            color: white !important;
+        }
+        
+        /* Remove the background color change on hover for nav-links */
+        .nav-link:hover {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+        
+        /* Search form styling */
+        .search-container {
+            max-width: 400px;
+            width: 100%;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+        
+        .search-form input {
+            height: 40px;
+            padding-left: 2.5rem !important;
+            font-size: 0.9rem;
+            border-radius: 20px 0 0 20px;
+            border: none;
+        }
+        
+        .search-form button {
+            height: 40px;
+            padding: 0 1.2rem;
+            font-weight: 500;
+            border-radius: 0 20px 20px 0;
+            border: none;
+            background-color: white;
+            color: var(--primary-color);
+        }
+        
+        .search-form button:hover {
+            background-color: #f0f0f0;
+            color: var(--primary-hover);
+        }
+        
+        .search-icon {
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            z-index: 10;
+        }
+        
+        /* Card styling */
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 12px;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: var(--element-spacing);
+            background-color: white;
+        }
+        
+        .card-body {
+            padding: 1.8rem;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Section styling */
+        section {
+            padding: var(--content-spacing) 0;
+            background-color: white;
+        }
+        
+        section + section {
+            margin-top: var(--section-spacing);
+        }
+        
+        section.bg-light {
+            background-color: #f8f9fa !important;
+        }
+        
+        /* Button styling */
+        .btn {
+            border-radius: 20px;
+            padding: 0.6rem 1.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-lg {
+            padding: 0.8rem 2.2rem;
+            font-size: 1.1rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 15px rgba(0, 102, 255, 0.15);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            box-shadow: 0 6px 20px rgba(0, 102, 255, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .btn-light {
+            background-color: white;
+            color: var(--primary-color);
+        }
+        
+        .btn-light:hover {
+            background-color: #f0f0f0;
+            color: var(--primary-hover);
+        }
+        
+        /* Section title styling */
+        .section-title {
+            margin-bottom: 3rem;
+            position: relative;
+            padding-bottom: 1.5rem;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+        
+        /* Dropdown styling */
+        .dropdown-menu {
+            border-radius: 8px;
+            margin-top: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: none;
+        }
+        
+        /* Add transition animation for dropdown */
+        .dropdown-menu {
+            transform-origin: top center;
+            animation: dropdown-animation 0.3s ease forwards;
+            opacity: 0;
+            transform: translateY(-10px) scale(0.98);
+        }
+        
+        @keyframes dropdown-animation {
+            0% {
+                opacity: 0;
+                transform: translateY(-10px) scale(0.98);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            transition: background-color 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Alert styling */
+        .alert {
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border: none;
+        }
+        
+        /* Footer styling */
+        footer {
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            padding: 4rem 0 2rem;
+            margin-top: 5rem;
+            background-color: white;
+        }
+        
+        footer h5, footer h6 {
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        
+        footer .list-unstyled li {
+            margin-bottom: 0.8rem;
+        }
+        
+        footer a {
+            color: #6c757d;
+            transition: color 0.3s ease;
+        }
+        
+        footer a:hover {
+            color: var(--primary-color);
+        }
+        
+        /* Container width */
+        .container {
+            max-width: 1140px;
+        }
+        
+        /* Hero section */
+        .hero-section {
+            background-color: var(--primary-color);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Media queries */
+        @media (max-width: 992px) {
+            .search-container {
+                order: 3;
+                width: 100%;
+                max-width: 100%;
+                margin: 0.8rem 0 0.5rem;
+            }
+            
+            .navbar-collapse {
+                flex-direction: column;
+            }
+            
+            .navbar-nav.me-auto, .navbar-nav.ms-auto {
+                width: 100%;
+            }
+            
+            .dropdown-menu {
+                width: 100%;
+                margin-top: 0;
+                box-shadow: none;
+                border: 1px solid rgba(0,0,0,0.08);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            :root {
+                --content-spacing: 3rem;
+                --section-spacing: 4rem;
+            }
+            .navbar {
+                padding: 0.5rem 0;
+            }
+            .search-container {
+                max-width: 100%;
+                margin: 1rem 0;
+            }
+            .hero-text h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-link {
+                padding: 0.5rem 0;
+            }
+            
+            .dropdown-menu {
+                position: static !important;
+                transform: none !important;
+                float: none;
+            }
+            
+            /* Table responsiveness */
+            .table-responsive-sm {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .table-sm td, .table-sm th {
+                padding: 0.3rem 0.5rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .search-form input {
+                height: 36px;
+                font-size: 0.85rem;
+                padding-left: 2.2rem !important;
+            }
+            
+            .search-form button {
+                height: 36px;
+                padding: 0 0.8rem;
+                font-size: 0.85rem;
+            }
+            
+            .search-icon {
+                left: 12px;
+                font-size: 0.9rem;
+            }
+            
+            .navbar-brand {
+                font-size: 1.1rem;
+            }
+            
+            .navbar .container {
+                padding: 0 10px;
+            }
+            
+            /* Stack table rows on small screens */
+            .table-stack-sm thead {
+                display: none;
+            }
+            
+            .table-stack-sm tr {
+                display: block;
+                border: 1px solid var(--border-color);
+                margin-bottom: 1rem;
+                border-radius: 8px;
+            }
+            
+            .table-stack-sm td {
+                display: block;
+                text-align: right;
+                padding: 0.5rem;
+                position: relative;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .table-stack-sm td:last-child {
+                border-bottom: none;
+            }
+            
+            .table-stack-sm td::before {
+                content: attr(data-label);
+                float: left;
+                font-weight: bold;
+                text-transform: uppercase;
+                font-size: 0.85em;
+            }
+        }
+        
+        /* Mobile dropdown positioning */
+        .mobile-dropdown {
+            position: static !important; /* Force static positioning */
+        }
+        
+        .mobile-dropdown .dropdown-toggle::after {
+            display: none; /* Hide dropdown arrow */
+        }
+        
+        .mobile-dropdown-menu {
+            position: absolute !important;
+            inset: auto 0 auto auto !important; /* Position at top right */
+            margin: 0 !important;
+            top: 59px !important; /* Fixed position below navbar */
+            transform: none !important;
+            z-index: 2000 !important; /* Highest z-index */
+            border-radius: 0 0 8px 8px !important;
+            border-top: none !important;
+            min-width: 280px !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+            transition: none !important; /* Disable animations */
+            overflow: visible !important;
+        }
+        
+        /* Desktop dropdown menu styling */
+        .navbar-nav .dropdown-menu {
+            position: absolute !important;
+            z-index: 2000 !important;
+            margin-top: 0 !important;
+            border-top: none;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        
+        .navbar-nav .dropdown-menu-end {
+            right: 0 !important;
+            left: auto !important;
+        }
+        
+        /* Fix for navbar contents */
+        .navbar-brand, 
+        .navbar-toggler,
+        .navbar-collapse {
+            position: relative;
+            z-index: 1040;
+        }
+        
+        /* Container to handle overflow properly */
+        .navbar .container {
+            position: static !important;
+        }
+        
+        @media (max-width: 992px) {
+            .dropdown-menu,
+            .mobile-dropdown-menu {
+                width: 100% !important;
+                max-width: 100% !important;
+                border-radius: 0 !important;
+                top: 59px !important;
+                right: 0 !important;
+                left: 0 !important;
+                box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+            }
+            
+            .navbar {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+        }
+        
+        /* For larger screens */
+        @media (min-width: 993px) {
+            .navbar-nav .dropdown-menu-end {
+                min-width: 320px;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center text-white" href="{{ url_for('main.index') }}">
+                <i class="fas fa-book-reader me-2"></i>EdlioX
+            </a>
+            
+            <!-- Auth Links for Mobile - Always Visible -->
+            <div class="d-flex d-lg-none align-items-center me-2">
+                {% if current_user.is_authenticated %}
+                    <div class="dropdown mobile-dropdown">
+                        <a class="nav-link px-2 dropdown-toggle d-flex align-items-center" href="#" id="mobileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="{{ current_user.avatar_url or url_for('static', filename='images/default-avatar.png') }}" 
+                                 alt="{{ current_user.username }}" 
+                                 class="rounded-circle" 
+                                 style="width: 32px; height: 32px; object-fit: cover; border: 2px solid rgba(255,255,255,0.5);">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end mobile-dropdown-menu" aria-labelledby="mobileDropdown">
+                            <li class="px-3 py-2 bg-light border-bottom">
+                                <div class="fw-bold">{{ current_user.username }}</div>
+                            </li>
+                            <li><a class="dropdown-item py-2" href="{{ url_for('auth.profile') }}"><i class="fas fa-user me-2 text-primary"></i>Profile</a></li>
+                            <li><a class="dropdown-item py-2" href="{{ url_for('resources.my_resources') }}"><i class="fas fa-folder me-2 text-info"></i>Resources</a></li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li><a class="dropdown-item py-2" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt me-2 text-danger"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-outline-light me-2">Login</a>
+                {% endif %}
+            </div>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('resources.list_resources') }}">
+                            <i class="fas fa-file-alt me-1"></i>Resources
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('discussions.index') }}">
+                            <i class="fas fa-comments me-1"></i>Discussions
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- Search Form -->
+                <div class="search-container mx-auto">
+                    <form class="d-flex position-relative search-form" action="{{ url_for('resources.search') }}" method="GET">
+                        <i class="fas fa-search position-absolute search-icon"></i>
+                        <input class="form-control" type="search" name="q" placeholder="Search resources..." value="{{ request.args.get('q', '') }}">
+                        <button class="btn" type="submit">Search</button>
+                    </form>
+                </div>
+                
+                <!-- Auth Links for Desktop -->
+                <ul class="navbar-nav ms-auto d-none d-lg-flex">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="d-flex align-items-center">
+                                    <div class="position-relative">
+                                        <img src="{{ current_user.avatar_url or url_for('static', filename='images/default-avatar.png') }}" 
+                                             alt="{{ current_user.username }}" 
+                                             class="rounded-circle" 
+                                             style="width: 38px; height: 38px; object-fit: cover; border: 2px solid rgba(255,255,255,0.5); box-shadow: 0 0 5px rgba(0,0,0,0.15);">
+                                    </div>
+                                    <span class="d-none d-sm-inline-block ms-2">{{ current_user.username }}</span>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li class="px-3 py-2 bg-light border-bottom">
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{ current_user.avatar_url or url_for('static', filename='images/default-avatar.png') }}" 
+                                             alt="{{ current_user.username }}" 
+                                             class="rounded-circle me-2" 
+                                             style="width: 42px; height: 42px; object-fit: cover; border: 1px solid #e9e9e9;">
+                                        <div>
+                                            <div class="fw-bold">{{ current_user.username }}</div>
+                                            <small class="text-muted">{{ current_user.email }}</small>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li><a class="dropdown-item py-2" href="{{ url_for('auth.profile') }}"><i class="fas fa-user me-2 text-primary"></i>My Profile</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ url_for('resources.my_resources') }}"><i class="fas fa-folder me-2 text-info"></i>My Resources</a></li>
+                                <li><a class="dropdown-item py-2" href="{{ url_for('discussions.my_discussions') }}"><i class="fas fa-question-circle me-2 text-success"></i>My Questions</a></li>
+                                <li><hr class="dropdown-divider my-1"></li>
+                           
+                                <li><a class="dropdown-item py-2" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt me-2 text-danger"></i>Logout</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.login') }}">
+                                <i class="fas fa-sign-in-alt me-1"></i>Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.register') }}">
+                                <i class="fas fa-user-plus me-1"></i>Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show animate__animated animate__fadeIn" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-book-reader me-2"></i>EdlioX</h5>
+                    <p class="text-muted">Share knowledge, grow together. Our global community helps students collaborate and excel.</p>
+                    <div class="mt-3">
+                        <a href="#" class="text-decoration-none me-3 fs-5"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-decoration-none me-3 fs-5"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-decoration-none me-3 fs-5"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-decoration-none fs-5"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2 mt-4 mt-md-0">
+                    <h6 class="fw-bold mb-3">Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('main.index') }}" class="text-decoration-none">Home</a></li>
+                        <li><a href="{{ url_for('resources.list_resources') }}" class="text-decoration-none">Resources</a></li>
+                        <li><a href="{{ url_for('discussions.index') }}" class="text-decoration-none">Discussions</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mt-4 mt-md-0">
+                    <h6 class="fw-bold mb-3">Support</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('main.about') }}" class="text-decoration-none">About</a></li>
+                        <li><a href="{{ url_for('main.contact') }}" class="text-decoration-none">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mt-4 mt-md-0">
+                    <h6 class="fw-bold mb-3">Subscribe to our newsletter</h6>
+                    <p class="text-muted mb-3">Get the latest updates and resources</p>
+                    <form class="d-flex">
+                        <input type="email" class="form-control me-2 rounded-pill" placeholder="Your email">
+                        <button type="submit" class="btn btn-primary rounded-pill">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0 text-muted">&copy; 2024 EdlioX. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="{{ url_for('main.privacy') }}" class="text-decoration-none text-muted me-3">Privacy Policy</a>
+                    <a href="{{ url_for('main.terms') }}" class="text-decoration-none text-muted">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- AOS JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+        
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
