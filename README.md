@@ -1,5 +1,8 @@
 # EdlioX Educational Marketplace & Discussion Platform
 
+[![Year Built](https://img.shields.io/badge/Year%20Built-2025-blue.svg)](#)
+
+
 Production-grade educational content management, academic resource marketplace, and community discussion ecosystem built with Flask, MongoDB, Stripe Connect, AWS S3, and Google Gemini AI.
 
 ```
